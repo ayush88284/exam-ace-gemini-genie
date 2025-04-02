@@ -1,7 +1,7 @@
 
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FileSearch } from "lucide-react";
 
 const NotFound = () => {
