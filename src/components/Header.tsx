@@ -1,26 +1,20 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Github } from "lucide-react";
+import { ThemeToggle } from "./ThemeProvider";
+import { GraduationCap } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Header: React.FC = () => {
   return (
-    <header className="w-full py-6">
-      <div className="container flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="rounded-full p-2 examace-gradient-bg">
-            <BookOpen className="h-6 w-6 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold examace-gradient-text">ExamAce</h1>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Github className="h-4 w-4" />
-            <span className="hidden sm:inline">GitHub</span>
-          </Button>
-          <Button size="sm" className="examace-gradient-bg gap-2">
-            Get Started
-          </Button>
+    <header className="border-b py-4 w-full">
+      <div className="container flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <GraduationCap className="h-7 w-7 examace-gradient-text" />
+          <span className="font-bold text-xl examace-gradient-text">GAMA AI</span>
+        </Link>
+        
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
         </div>
       </div>
     </header>

@@ -7,6 +7,8 @@ import QuestionList, { Question } from "@/components/QuestionList";
 import ChatInterface from "@/components/ChatInterface";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, HelpCircle } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [content, setContent] = useState<string | null>(null);
@@ -15,17 +17,66 @@ const Index = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState("questions");
 
-  const handleContentUploaded = (newContent: string, source: string) => {
+  const handleContentUploaded = async (newContent: string, source: string) => {
     setContent(newContent);
     setContentSource(source);
-    generateQuestions();
+    await generateQuestions(newContent);
   };
 
-  const generateQuestions = () => {
+  const generateQuestions = async (contentToUse?: string) => {
     setIsGeneratingQuestions(true);
-    // Simulate API call to Gemini for question generation
-    setTimeout(() => {
-      const newQuestions = [
+    const textContent = contentToUse || content;
+    
+    if (!textContent) {
+      toast.error("No content available to generate questions");
+      setIsGeneratingQuestions(false);
+      return;
+    }
+    
+    try {
+      // Call our Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: {
+          content: textContent,
+          type: 'generate-questions'
+        }
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Parse the response to extract questions and answers
+      const generatedText = data.generatedText || '';
+      
+      // Process the text to extract questions
+      const questionBlocks = generatedText.split(/(?=\d+\.\s)/g).filter(block => block.trim());
+      
+      const parsedQuestions: Question[] = questionBlocks.map((block, index) => {
+        // Try to split question and answer
+        const parts = block.split(/(?:Answer:|(?:\r?\n){2,})/);
+        let text = parts[0].replace(/^\d+\.\s*/, '').trim();
+        let answer = parts[1]?.trim() || "The answer is not provided for this question.";
+        
+        return {
+          id: `q${Date.now()}-${index}`,
+          text,
+          answer
+        };
+      });
+      
+      setQuestions(prevQuestions => {
+        const existingIds = new Set(prevQuestions.map(q => q.id));
+        const uniqueNewQuestions = parsedQuestions.filter(q => !existingIds.has(q.id));
+        return [...prevQuestions, ...uniqueNewQuestions];
+      });
+      
+    } catch (error) {
+      console.error("Error generating questions:", error);
+      toast.error("Failed to generate questions. Please try again.");
+      
+      // Fallback to demo questions if API fails
+      const fallbackQuestions = [
         {
           id: `q${Date.now()}-1`,
           text: "What are the key factors affecting climate change?",
@@ -35,22 +86,17 @@ const Index = () => {
           id: `q${Date.now()}-2`,
           text: "How does photosynthesis work in plants?",
           answer: "Photosynthesis is the process by which plants convert light energy into chemical energy. The process takes place in chloroplasts, particularly in the chlorophyll-containing tissues. It uses carbon dioxide and water to produce glucose and oxygen through a series of light-dependent and light-independent reactions."
-        },
-        {
-          id: `q${Date.now()}-3`,
-          text: "What were the main causes of World War II?",
-          answer: "The main causes of World War II include the harsh conditions imposed on Germany by the Treaty of Versailles, the global economic depression, the rise of fascism and militarism in Germany, Italy, and Japan, the policy of appeasement by Western powers, and territorial disputes in Europe and Asia."
         }
       ];
       
       setQuestions(prevQuestions => {
         const existingIds = new Set(prevQuestions.map(q => q.id));
-        const uniqueNewQuestions = newQuestions.filter(q => !existingIds.has(q.id));
+        const uniqueNewQuestions = fallbackQuestions.filter(q => !existingIds.has(q.id));
         return [...prevQuestions, ...uniqueNewQuestions];
       });
-      
+    } finally {
       setIsGeneratingQuestions(false);
-    }, 2000);
+    }
   };
 
   const handleGenerateMoreQuestions = () => {
@@ -65,7 +111,7 @@ const Index = () => {
         <div className="container py-8 space-y-8">
           <div className="max-w-3xl mx-auto text-center space-y-4 mb-12">
             <h1 className="text-4xl font-bold examace-gradient-text">
-              Ace Your Exams With AI
+              GAMA AI - Ace Your Exams With AI
             </h1>
             <p className="text-lg text-muted-foreground">
               Upload your study materials and let our AI generate exam-focused questions and answers to help you prepare effectively.
@@ -106,7 +152,10 @@ const Index = () => {
                   />
                 </TabsContent>
                 <TabsContent value="chat">
-                  <ChatInterface contentSource={contentSource} />
+                  <ChatInterface 
+                    contentSource={contentSource} 
+                    studyContent={content}
+                  />
                 </TabsContent>
               </Tabs>
             )}
