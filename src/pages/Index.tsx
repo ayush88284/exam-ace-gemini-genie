@@ -46,11 +46,20 @@ const Index = () => {
         throw new Error(error.message);
       }
       
-      // Parse the response to extract questions and answers
+      if (!data || !data.generatedText) {
+        throw new Error('No content was generated. The API response was empty.');
+      }
+      
+      // Process the response to extract questions
       const generatedText = data.generatedText || '';
+      console.log("Generated text:", generatedText.substring(0, 100) + "...");
       
       // Process the text to extract questions
       const questionBlocks = generatedText.split(/(?=\d+\.\s)/g).filter(block => block.trim());
+      
+      if (questionBlocks.length === 0) {
+        throw new Error('Could not parse questions from the generated content.');
+      }
       
       const parsedQuestions: Question[] = questionBlocks.map((block, index) => {
         // Try to split question and answer
@@ -65,35 +74,19 @@ const Index = () => {
         };
       });
       
-      setQuestions(prevQuestions => {
-        const existingIds = new Set(prevQuestions.map(q => q.id));
-        const uniqueNewQuestions = parsedQuestions.filter(q => !existingIds.has(q.id));
-        return [...prevQuestions, ...uniqueNewQuestions];
-      });
+      // Replace previous questions rather than append
+      setQuestions(parsedQuestions);
+      
+      if (parsedQuestions.length === 0) {
+        toast.warning("Generated content did not contain any valid questions. Try uploading different content.");
+      }
       
     } catch (error) {
       console.error("Error generating questions:", error);
       toast.error("Failed to generate questions. Please try again.");
       
-      // Fallback to demo questions if API fails
-      const fallbackQuestions = [
-        {
-          id: `q${Date.now()}-1`,
-          text: "What are the key factors affecting climate change?",
-          answer: "The key factors affecting climate change include greenhouse gas emissions, deforestation, industrial processes, and natural climate variability. Human activities, particularly the burning of fossil fuels, have significantly increased the concentration of greenhouse gases in the atmosphere."
-        },
-        {
-          id: `q${Date.now()}-2`,
-          text: "How does photosynthesis work in plants?",
-          answer: "Photosynthesis is the process by which plants convert light energy into chemical energy. The process takes place in chloroplasts, particularly in the chlorophyll-containing tissues. It uses carbon dioxide and water to produce glucose and oxygen through a series of light-dependent and light-independent reactions."
-        }
-      ];
-      
-      setQuestions(prevQuestions => {
-        const existingIds = new Set(prevQuestions.map(q => q.id));
-        const uniqueNewQuestions = fallbackQuestions.filter(q => !existingIds.has(q.id));
-        return [...prevQuestions, ...uniqueNewQuestions];
-      });
+      // Clear previous questions instead of falling back to demo questions
+      setQuestions([]);
     } finally {
       setIsGeneratingQuestions(false);
     }

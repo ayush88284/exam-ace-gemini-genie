@@ -17,9 +17,22 @@ serve(async (req) => {
 
   try {
     const { prompt, content, type } = await req.json();
+    
+    console.log('Function called with type:', type);
+    console.log('Content length:', content?.length || 0);
+
+    // Validate API key
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
+
+    // Validate content
+    if (!content || content.length < 10) {
+      throw new Error('Content is too short or missing');
+    }
 
     // Determine which endpoint to use based on the request type
-    let endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
+    const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
     
     const headers = {
       'Content-Type': 'application/json',
@@ -66,21 +79,33 @@ serve(async (req) => {
           maxOutputTokens: 2048,
         }
       };
+    } else {
+      throw new Error(`Invalid type: ${type}`);
     }
 
+    console.log('Sending request to Gemini API...');
+    
     const response = await fetch(endpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Gemini API error:', errorData);
+      throw new Error(`Gemini API error: ${JSON.stringify(errorData)}`);
+    }
+
     const data = await response.json();
     
     if (data.error) {
+      console.error('Gemini API returned an error:', data.error);
       throw new Error(data.error.message || 'Error generating content');
     }
 
-    const generatedText = data.candidates[0]?.content?.parts?.[0]?.text || '';
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('Generated text length:', generatedText.length);
 
     return new Response(JSON.stringify({ generatedText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
