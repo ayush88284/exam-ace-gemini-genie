@@ -2,7 +2,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
-const apiKey = Deno.env.get('GEMINI_API_KEY');
+// Use the provided API key directly as a fallback in case the env variable is not set
+const apiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyBJwob9aavPXaUFP_J0PEt323HfRCvCEE0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,11 +21,6 @@ serve(async (req) => {
     
     console.log('Function called with type:', type);
     console.log('Content length:', content?.length || 0);
-
-    // Validate API key
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not configured');
-    }
 
     // Validate content
     if (!content || content.length < 10) {
@@ -84,6 +80,7 @@ serve(async (req) => {
     }
 
     console.log('Sending request to Gemini API...');
+    console.log('API Key used (first 5 chars):', apiKey.substring(0, 5));
     
     const response = await fetch(endpoint, {
       method: 'POST',
