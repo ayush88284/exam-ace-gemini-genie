@@ -11,13 +11,13 @@ const Footer: React.FC = () => {
             <div className="rounded-full p-2 examace-gradient-bg">
               <BookOpen className="h-5 w-5 text-white" />
             </div>
-            <h2 className="text-xl font-bold examace-gradient-text">ExamAce</h2>
+            <h2 className="text-xl font-bold examace-gradient-text">GAMA AI</h2>
           </div>
           <p className="text-sm text-muted-foreground text-center">
             AI-powered study assistant for exam preparation
           </p>
           <div className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} ExamAce. All rights reserved.
+            &copy; {new Date().getFullYear()} GAMA AI. All rights reserved.
           </div>
         </div>
       </div>

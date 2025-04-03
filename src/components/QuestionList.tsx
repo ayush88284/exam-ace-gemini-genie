@@ -8,6 +8,13 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Loader2, RefreshCcw, Lightbulb } from "lucide-react";
 
 export interface Question {
@@ -21,13 +28,17 @@ interface QuestionListProps {
   isLoading: boolean;
   contentSource: string;
   onGenerateMoreQuestions: () => void;
+  questionCount: number;
+  onQuestionCountChange: (value: string) => void;
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({
   questions,
   isLoading,
   contentSource,
-  onGenerateMoreQuestions
+  onGenerateMoreQuestions,
+  questionCount,
+  onQuestionCountChange
 }) => {
   const [openItems, setOpenItems] = useState<string[]>([]);
 
@@ -54,7 +65,47 @@ const QuestionList: React.FC<QuestionListProps> = ({
   }
 
   if (questions.length === 0) {
-    return null;
+    return (
+      <Card className="examace-card w-full">
+        <CardContent className="pt-6 text-center py-8">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Generate Study Questions</h3>
+            <p className="text-sm text-muted-foreground">
+              Select how many questions you want to generate based on your study material
+            </p>
+            
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-3">
+                <label htmlFor="question-count-select" className="text-sm font-medium">
+                  Number of questions:
+                </label>
+                <Select 
+                  value={questionCount.toString()} 
+                  onValueChange={onQuestionCountChange}
+                >
+                  <SelectTrigger className="w-[100px]" id="question-count-select">
+                    <SelectValue placeholder="5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="15">15</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button 
+                onClick={onGenerateMoreQuestions}
+                className="examace-gradient-bg"
+              >
+                Generate Questions
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -67,15 +118,33 @@ const QuestionList: React.FC<QuestionListProps> = ({
               Based on: {contentSource}
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onGenerateMoreQuestions}
-            className="flex gap-2"
-          >
-            <RefreshCcw className="h-4 w-4" />
-            Generate More
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Select 
+                value={questionCount.toString()} 
+                onValueChange={onQuestionCountChange}
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue placeholder="5" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3</SelectItem>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="15">15</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onGenerateMoreQuestions}
+              className="flex gap-2"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Generate
+            </Button>
+          </div>
         </div>
 
         <Accordion type="multiple" className="w-full">

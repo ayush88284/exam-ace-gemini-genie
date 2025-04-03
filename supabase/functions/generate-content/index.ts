@@ -17,10 +17,11 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, content, type } = await req.json();
+    const { prompt, content, type, numQuestions = 5 } = await req.json();
     
     console.log('Function called with type:', type);
     console.log('Content length:', content?.length || 0);
+    console.log('Number of questions requested:', numQuestions);
 
     // Validate content
     if (!content || content.length < 10) {
@@ -63,7 +64,7 @@ serve(async (req) => {
           {
             parts: [
               { 
-                text: `You are an AI study assistant. Generate 5 exam-focused questions with answers based on the following content. Format each question with its answer. Make the questions challenging and relevant for exam preparation:\n\n${content}` 
+                text: `You are an AI study assistant. Generate ${numQuestions} exam-focused questions with answers based on the following content ONLY. Format each question with its answer. Make the questions challenging and relevant for exam preparation. DO NOT make up information not present in the provided content: \n\n${content}` 
               }
             ]
           }

@@ -6,6 +6,13 @@ import UploadSection from "@/components/UploadSection";
 import QuestionList, { Question } from "@/components/QuestionList";
 import ChatInterface from "@/components/ChatInterface";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { MessageSquare, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +23,7 @@ const Index = () => {
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState("questions");
+  const [questionCount, setQuestionCount] = useState("5");
 
   const handleContentUploaded = async (newContent: string, source: string) => {
     setContent(newContent);
@@ -38,7 +46,8 @@ const Index = () => {
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
           content: textContent,
-          type: 'generate-questions'
+          type: 'generate-questions',
+          numQuestions: parseInt(questionCount)
         }
       });
       
@@ -55,7 +64,7 @@ const Index = () => {
       console.log("Generated text:", generatedText.substring(0, 100) + "...");
       
       // Process the text to extract questions
-      const questionBlocks = generatedText.split(/(?=\d+\.\s)/g).filter(block => block.trim());
+      const questionBlocks = generatedText.split(/(?=\d+\.\s|Question \d+:)/g).filter(block => block.trim());
       
       if (questionBlocks.length === 0) {
         throw new Error('Could not parse questions from the generated content.');
@@ -64,7 +73,7 @@ const Index = () => {
       const parsedQuestions: Question[] = questionBlocks.map((block, index) => {
         // Try to split question and answer
         const parts = block.split(/(?:Answer:|(?:\r?\n){2,})/);
-        let text = parts[0].replace(/^\d+\.\s*/, '').trim();
+        let text = parts[0].replace(/^\d+\.\s*|Question \d+:\s*/i, '').trim();
         let answer = parts[1]?.trim() || "The answer is not provided for this question.";
         
         return {
@@ -137,11 +146,37 @@ const Index = () => {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="questions">
+                  {content && !isGeneratingQuestions && questions.length === 0 && (
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <label htmlFor="question-count" className="text-sm font-medium">
+                          Number of questions:
+                        </label>
+                        <Select 
+                          value={questionCount} 
+                          onValueChange={setQuestionCount}
+                        >
+                          <SelectTrigger className="w-[100px]" id="question-count">
+                            <SelectValue placeholder="5" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="3">3</SelectItem>
+                            <SelectItem value="5">5</SelectItem>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="15">15</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                  
                   <QuestionList 
                     questions={questions}
                     isLoading={isGeneratingQuestions}
                     contentSource={contentSource}
                     onGenerateMoreQuestions={handleGenerateMoreQuestions}
+                    questionCount={parseInt(questionCount)}
+                    onQuestionCountChange={setQuestionCount}
                   />
                 </TabsContent>
                 <TabsContent value="chat">
