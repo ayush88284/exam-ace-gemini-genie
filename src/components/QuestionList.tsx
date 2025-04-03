@@ -52,9 +52,9 @@ const QuestionList: React.FC<QuestionListProps> = ({
 
   if (isLoading) {
     return (
-      <Card className="examace-card w-full">
+      <Card className="w-full">
         <CardContent className="pt-6 text-center py-12">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-examace-purple" />
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
           <h3 className="mt-4 text-lg font-medium">Generating Questions</h3>
           <p className="text-sm text-muted-foreground mt-2">
             Our AI is analyzing your study material and creating targeted questions...
@@ -66,7 +66,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
 
   if (questions.length === 0) {
     return (
-      <Card className="examace-card w-full">
+      <Card className="w-full">
         <CardContent className="pt-6 text-center py-8">
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Generate Study Questions</h3>
@@ -97,7 +97,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
               
               <Button 
                 onClick={onGenerateMoreQuestions}
-                className="examace-gradient-bg"
+                className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white"
               >
                 Generate Questions
               </Button>
@@ -109,11 +109,11 @@ const QuestionList: React.FC<QuestionListProps> = ({
   }
 
   return (
-    <Card className="examace-card w-full animate-fade-in">
+    <Card className="w-full animate-fade-in">
       <CardContent className="pt-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-semibold examace-gradient-text">Generated Questions</h2>
+            <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500">Generated Questions</h2>
             <p className="text-sm text-muted-foreground">
               Based on: {contentSource}
             </p>
@@ -148,7 +148,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
         </div>
 
         <Accordion type="multiple" className="w-full">
-          {questions.map((question) => (
+          {questions.map((question, index) => (
             <AccordionItem 
               key={question.id} 
               value={question.id}
@@ -159,8 +159,8 @@ const QuestionList: React.FC<QuestionListProps> = ({
                 className="hover:no-underline py-3"
               >
                 <div className="flex items-start text-left gap-3">
-                  <Lightbulb className="h-5 w-5 text-examace-purple shrink-0 mt-0.5" />
-                  <span className="font-medium text-base">{question.text}</span>
+                  <Lightbulb className="h-5 w-5 text-purple-500 shrink-0 mt-0.5" />
+                  <span className="font-medium text-base">Question {index + 1}: {question.text}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="text-left pt-2 pb-4">

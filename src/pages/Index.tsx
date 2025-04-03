@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -63,25 +62,77 @@ const Index = () => {
       const generatedText = data.generatedText || '';
       console.log("Generated text:", generatedText.substring(0, 100) + "...");
       
-      // Process the text to extract questions
-      const questionBlocks = generatedText.split(/(?=\d+\.\s|Question \d+:)/g).filter(block => block.trim());
+      // Process the text to extract questions and answers
+      // Better parsing to handle various formats from Gemini
+      const parsedQuestions: Question[] = [];
       
-      if (questionBlocks.length === 0) {
-        throw new Error('Could not parse questions from the generated content.');
-      }
+      // Split by question patterns (numbered questions or "Question:" format)
+      const questionPattern = /(?:^|\n)(?:(\d+[\.\)]|Question \d+:))\s*(.*?)(?=\s*ANSWER:|$)/gsi;
+      const answerPattern = /ANSWER:\s*([\s\S]*?)(?=(?:\n\d+[\.\)]|\nQuestion \d+:|$))/gi;
       
-      const parsedQuestions: Question[] = questionBlocks.map((block, index) => {
-        // Try to split question and answer
-        const parts = block.split(/(?:Answer:|(?:\r?\n){2,})/);
-        let text = parts[0].replace(/^\d+\.\s*|Question \d+:\s*/i, '').trim();
-        let answer = parts[1]?.trim() || "The answer is not provided for this question.";
+      let questionMatches = [...generatedText.matchAll(questionPattern)];
+      let answerMatches = [...generatedText.matchAll(answerPattern)];
+      
+      // If we don't have enough matches, try alternative parsing
+      if (questionMatches.length < 2 && answerMatches.length < 2) {
+        // Try splitting by double newlines and look for question/answer pairs
+        const parts = generatedText.split(/\n\s*\n/).filter(p => p.trim());
         
-        return {
-          id: `q${Date.now()}-${index}`,
-          text,
-          answer
-        };
-      });
+        parts.forEach((part, index) => {
+          const answerSplit = part.split(/ANSWER:/i);
+          if (answerSplit.length >= 2) {
+            // First part is the question, rest is the answer
+            const questionText = answerSplit[0].replace(/^\d+[\.\)]\s*|^Question \d+:\s*/i, '').trim();
+            const answerText = answerSplit[1].trim();
+            
+            parsedQuestions.push({
+              id: `q${Date.now()}-${index}`,
+              text: questionText,
+              answer: answerText
+            });
+          } else {
+            // If no "ANSWER:" found, try to determine if this is a question or answer
+            // If followed by a part with "ANSWER:", this is likely a question
+            if (index + 1 < parts.length && parts[index + 1].includes("ANSWER:")) {
+              const questionText = part.replace(/^\d+[\.\)]\s*|^Question \d+:\s*/i, '').trim();
+              parsedQuestions.push({
+                id: `q${Date.now()}-${index}`,
+                text: questionText,
+                answer: "Not provided"
+              });
+            } else if (index > 0 && parts[index - 1].includes("?") && !part.includes("?")) {
+              // If previous part had a question mark and this doesn't, likely an answer
+              if (parsedQuestions.length > 0) {
+                parsedQuestions[parsedQuestions.length - 1].answer = part;
+              }
+            } else {
+              // Otherwise assume it's a question with no answer
+              const questionText = part.replace(/^\d+[\.\)]\s*|^Question \d+:\s*/i, '').trim();
+              parsedQuestions.push({
+                id: `q${Date.now()}-${index}`,
+                text: questionText,
+                answer: "Not provided"
+              });
+            }
+          }
+        });
+      } else {
+        // Process using regex matches
+        questionMatches.forEach((match, index) => {
+          const questionText = match[2].replace(/^\*\*|\*\*$/g, '').trim();
+          let answerText = "Answer not provided";
+          
+          if (index < answerMatches.length) {
+            answerText = answerMatches[index][1].replace(/^\*\*|\*\*$/g, '').trim();
+          }
+          
+          parsedQuestions.push({
+            id: `q${Date.now()}-${index}`,
+            text: questionText,
+            answer: answerText
+          });
+        });
+      }
       
       // Replace previous questions rather than append
       setQuestions(parsedQuestions);
@@ -94,7 +145,7 @@ const Index = () => {
       console.error("Error generating questions:", error);
       toast.error("Failed to generate questions. Please try again.");
       
-      // Clear previous questions instead of falling back to demo questions
+      // Clear previous questions
       setQuestions([]);
     } finally {
       setIsGeneratingQuestions(false);

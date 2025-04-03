@@ -64,7 +64,7 @@ serve(async (req) => {
           {
             parts: [
               { 
-                text: `You are an AI study assistant. Generate ${numQuestions} exam-focused questions with answers based on the following content ONLY. Format each question with its answer. Make the questions challenging and relevant for exam preparation. DO NOT make up information not present in the provided content: \n\n${content}` 
+                text: `You are an AI study assistant. Generate exactly ${numQuestions} questions with answers based ONLY on the following uploaded content. Format each question with a clear question followed by "ANSWER:" and then the answer. Do not include any special characters like asterisks or numbers at the beginning of questions. The questions must be directly relevant to the specific content provided and not generic topics:\n\n${content}` 
               }
             ]
           }
