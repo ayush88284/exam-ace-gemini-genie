@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -60,85 +61,106 @@ const Index = () => {
       
       // Process the response to extract questions
       const generatedText = data.generatedText || '';
-      console.log("Generated text:", generatedText.substring(0, 100) + "...");
+      console.log("Generated text preview:", generatedText.substring(0, 300) + "...");
       
-      // Process the text to extract questions and answers
-      // Better parsing to handle various formats from Gemini
+      // Improved parsing logic to extract questions and answers
       const parsedQuestions: Question[] = [];
       
-      // Split by question patterns (numbered questions or "Question:" format)
-      const questionPattern = /(?:^|\n)(?:(\d+[\.\)]|Question \d+:))\s*(.*?)(?=\s*ANSWER:|$)/gsi;
-      const answerPattern = /ANSWER:\s*([\s\S]*?)(?=(?:\n\d+[\.\)]|\nQuestion \d+:|$))/gi;
+      // Split text by lines to process each question-answer pair
+      const lines = generatedText.split('\n').filter(line => line.trim());
+      let currentQuestion = '';
+      let currentAnswer = '';
+      let isReadingAnswer = false;
       
-      let questionMatches = [...generatedText.matchAll(questionPattern)];
-      let answerMatches = [...generatedText.matchAll(answerPattern)];
-      
-      // If we don't have enough matches, try alternative parsing
-      if (questionMatches.length < 2 && answerMatches.length < 2) {
-        // Try splitting by double newlines and look for question/answer pairs
-        const parts = generatedText.split(/\n\s*\n/).filter(p => p.trim());
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim()
+          .replace(/^\d+[\.\)]\s*/, '') // Remove numeric prefixes like "1." or "1)"
+          .replace(/^\*\*|\*\*$/g, '') // Remove markdown-style asterisks
+          .replace(/^Question:?\s*/i, ''); // Remove "Question:" prefix
         
-        parts.forEach((part, index) => {
-          const answerSplit = part.split(/ANSWER:/i);
-          if (answerSplit.length >= 2) {
-            // First part is the question, rest is the answer
-            const questionText = answerSplit[0].replace(/^\d+[\.\)]\s*|^Question \d+:\s*/i, '').trim();
-            const answerText = answerSplit[1].trim();
+        if (line.toLowerCase().includes('answer:')) {
+          // We found the start of an answer
+          isReadingAnswer = true;
+          const parts = line.split(/answer:?/i);
+          if (parts.length > 1) {
+            // The line contains both question end and answer start
+            if (!currentQuestion) {
+              currentQuestion = parts[0].trim();
+            }
+            currentAnswer = parts[1].trim();
+          }
+        } else if (i < lines.length - 1 && 
+                  lines[i+1].trim().toLowerCase().includes('answer:')) {
+          // The next line is an answer, so this must be a question
+          currentQuestion = line;
+        } else if (isReadingAnswer) {
+          // Continue building the current answer
+          currentAnswer += ' ' + line;
+        } else if (line.trim() && line.endsWith('?')) {
+          // This is likely a question (ends with question mark)
+          currentQuestion = line;
+        } else if (currentQuestion && !isReadingAnswer) {
+          // Part of a multi-line question
+          currentQuestion += ' ' + line;
+        }
+        
+        // Check if we should save the current Q&A and move to the next
+        const isEndOfAnswer = isReadingAnswer && 
+          (i === lines.length - 1 || 
+           (lines[i+1].trim().endsWith('?') || 
+            /^\d+[\.\)]/.test(lines[i+1]) ||
+            lines[i+1].toLowerCase().includes('question')));
+        
+        if (isEndOfAnswer || (i === lines.length - 1 && currentQuestion)) {
+          if (currentQuestion) {
+            parsedQuestions.push({
+              id: `q${Date.now()}-${parsedQuestions.length}`,
+              text: currentQuestion.trim(),
+              answer: currentAnswer.trim() || "No answer provided"
+            });
+          }
+          
+          // Reset for next Q&A pair
+          currentQuestion = '';
+          currentAnswer = '';
+          isReadingAnswer = false;
+        }
+      }
+      
+      // If we didn't find any questions with the detailed parsing,
+      // try a simpler approach by splitting on "ANSWER:"
+      if (parsedQuestions.length === 0) {
+        const questionBlocks = generatedText.split(/\n\s*\n/).filter(block => block.trim());
+        
+        questionBlocks.forEach((block, index) => {
+          const parts = block.split(/ANSWER:/i);
+          if (parts.length >= 2) {
+            const questionText = parts[0]
+              .replace(/^\d+[\.\)]\s*/, '')
+              .replace(/^\*\*|\*\*$/g, '')
+              .replace(/^Question:?\s*/i, '')
+              .trim();
+            
+            const answerText = parts[1].trim();
             
             parsedQuestions.push({
               id: `q${Date.now()}-${index}`,
               text: questionText,
               answer: answerText
             });
-          } else {
-            // If no "ANSWER:" found, try to determine if this is a question or answer
-            // If followed by a part with "ANSWER:", this is likely a question
-            if (index + 1 < parts.length && parts[index + 1].includes("ANSWER:")) {
-              const questionText = part.replace(/^\d+[\.\)]\s*|^Question \d+:\s*/i, '').trim();
-              parsedQuestions.push({
-                id: `q${Date.now()}-${index}`,
-                text: questionText,
-                answer: "Not provided"
-              });
-            } else if (index > 0 && parts[index - 1].includes("?") && !part.includes("?")) {
-              // If previous part had a question mark and this doesn't, likely an answer
-              if (parsedQuestions.length > 0) {
-                parsedQuestions[parsedQuestions.length - 1].answer = part;
-              }
-            } else {
-              // Otherwise assume it's a question with no answer
-              const questionText = part.replace(/^\d+[\.\)]\s*|^Question \d+:\s*/i, '').trim();
-              parsedQuestions.push({
-                id: `q${Date.now()}-${index}`,
-                text: questionText,
-                answer: "Not provided"
-              });
-            }
           }
-        });
-      } else {
-        // Process using regex matches
-        questionMatches.forEach((match, index) => {
-          const questionText = match[2].replace(/^\*\*|\*\*$/g, '').trim();
-          let answerText = "Answer not provided";
-          
-          if (index < answerMatches.length) {
-            answerText = answerMatches[index][1].replace(/^\*\*|\*\*$/g, '').trim();
-          }
-          
-          parsedQuestions.push({
-            id: `q${Date.now()}-${index}`,
-            text: questionText,
-            answer: answerText
-          });
         });
       }
+      
+      console.log(`Parsed ${parsedQuestions.length} questions from the response`);
       
       // Replace previous questions rather than append
       setQuestions(parsedQuestions);
       
       if (parsedQuestions.length === 0) {
-        toast.warning("Generated content did not contain any valid questions. Try uploading different content.");
+        toast.warning("Could not extract questions from the generated content. Please try again with different content.");
+      } else if (parsedQuestions.length < parseInt(questionCount)) {
+        toast.info(`Only extracted ${parsedQuestions.length} questions out of the requested ${questionCount}`);
       }
       
     } catch (error) {

@@ -22,6 +22,7 @@ serve(async (req) => {
     console.log('Function called with type:', type);
     console.log('Content length:', content?.length || 0);
     console.log('Number of questions requested:', numQuestions);
+    console.log('Content preview:', content?.substring(0, 100));
 
     // Validate content
     if (!content || content.length < 10) {
@@ -44,7 +45,7 @@ serve(async (req) => {
         contents: [
           {
             parts: [
-              { text: "You are an AI study assistant. Use the following content to answer questions:" },
+              { text: "You are an AI study assistant. Use the following content to answer questions. Only provide information based on this content:" },
               { text: content },
               { text: prompt }
             ]
@@ -58,19 +59,19 @@ serve(async (req) => {
         }
       };
     } else if (type === 'generate-questions') {
-      // For generating questions
+      // For generating questions - with more specific instructions
       payload = {
         contents: [
           {
             parts: [
               { 
-                text: `You are an AI study assistant. Generate exactly ${numQuestions} questions with answers based ONLY on the following uploaded content. Format each question with a clear question followed by "ANSWER:" and then the answer. Do not include any special characters like asterisks or numbers at the beginning of questions. The questions must be directly relevant to the specific content provided and not generic topics:\n\n${content}` 
+                text: `You are an AI study assistant. Generate exactly ${numQuestions} questions with answers based ONLY on the following content. You must NOT generate any questions about topics not directly covered in this content. Format each question as a plain question without any prefixes, followed by "ANSWER:" and then the answer. Do not include any special characters, numbers, or asterisks at the beginning of questions. The content is:\n\n${content}` 
               }
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.8,
+          temperature: 0.7,
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 2048,
@@ -103,7 +104,7 @@ serve(async (req) => {
     }
 
     const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    console.log('Generated text length:', generatedText.length);
+    console.log('Generated text snippet:', generatedText.substring(0, 200));
 
     return new Response(JSON.stringify({ generatedText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
