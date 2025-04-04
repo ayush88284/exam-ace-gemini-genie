@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -26,6 +25,9 @@ const Index = () => {
   const [questionCount, setQuestionCount] = useState("5");
 
   const handleContentUploaded = async (newContent: string, source: string) => {
+    console.log("Content received, length:", newContent.length);
+    console.log("Content preview:", newContent.substring(0, 200));
+    
     setContent(newContent);
     setContentSource(source);
     await generateQuestions(newContent);
@@ -42,6 +44,8 @@ const Index = () => {
     }
     
     try {
+      console.log("Generating questions with content length:", textContent.length);
+      
       // Call our Supabase Edge Function with explicit document content
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {

@@ -22,7 +22,7 @@ serve(async (req) => {
     console.log('Function called with type:', type);
     console.log('Content length:', content?.length || 0);
     console.log('Number of questions requested:', numQuestions);
-    console.log('Content preview:', content?.substring(0, 100));
+    console.log('Content preview:', content?.substring(0, 500));
 
     // Validate content
     if (!content || content.length < 10) {
@@ -45,21 +45,21 @@ serve(async (req) => {
         contents: [
           {
             parts: [
-              { text: "You are an AI study assistant. Use the following content to answer questions. Only provide information based on this content:" },
+              { text: "You are an AI study assistant named GAMA AI. Use ONLY the following content to answer questions. Only provide information based on this content and nothing else:" },
               { text: content },
               { text: prompt }
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.2,
-          topK: 40,
-          topP: 0.95,
+          temperature: 0.1,
+          topK: 20,
+          topP: 0.8,
           maxOutputTokens: 1024,
         }
       };
     } else if (type === 'generate-questions') {
-      // For generating questions - with much stricter instructions to use ONLY the content provided
+      // For generating questions - with extremely strict instructions to use ONLY the content provided
       payload = {
         contents: [
           {
@@ -67,14 +67,15 @@ serve(async (req) => {
               { 
                 text: `You are an AI study assistant named GAMA AI. Your task is to generate EXACTLY ${numQuestions} questions with answers based EXCLUSIVELY on the content provided below.
 
-IMPORTANT RULES:
+CRITICAL INSTRUCTIONS:
 1. ONLY use information directly stated in the provided content.
-2. DO NOT use any external knowledge about any topic.
+2. DO NOT use any external knowledge or general information about any topic.
 3. DO NOT make up information or facts that are not explicitly in the text.
-4. If the content is about history, only ask about the historical facts in the content.
-5. If the content is about science, only ask about the scientific concepts in the content.
-6. NEVER generate questions about machine learning unless the document is specifically about machine learning.
-7. Create questions only from the exact text provided, not based on general knowledge of the subject.
+4. All of your questions and answers must be directly answerable from the specific content below.
+5. Avoid using any facts or knowledge that is not explicitly present in this content.
+6. If the content doesn't provide enough information for ${numQuestions} questions, generate fewer questions but NEVER invent information.
+7. DO NOT generate questions about machine learning unless the document is specifically about machine learning.
+8. Your response should contain ONLY questions and answers derived from the document, nothing else.
 
 Format your response as follows:
 Question: [question text]
@@ -82,7 +83,7 @@ Answer: [answer text]
 
 (Leave a blank line between each question-answer pair)
 
-Here is the ONLY content you should use:
+Here is the CONTENT you MUST use and ONLY use:
 
 ${content}`
               }
@@ -90,9 +91,9 @@ ${content}`
           }
         ],
         generationConfig: {
-          temperature: 0.01, // Extremely low temperature to be highly deterministic
-          topK: 10,
-          topP: 0.5,
+          temperature: 0.01, // Extremely low temperature to be strictly deterministic
+          topK: 5,
+          topP: 0.3,
           maxOutputTokens: 2048,
         }
       };
