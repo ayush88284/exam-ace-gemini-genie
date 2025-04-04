@@ -66,90 +66,89 @@ const Index = () => {
       // Improved parsing logic to extract questions and answers
       const parsedQuestions: Question[] = [];
       
-      // Split text by lines to process each question-answer pair
-      const lines = generatedText.split('\n').filter(line => line.trim());
-      let currentQuestion = '';
-      let currentAnswer = '';
-      let isReadingAnswer = false;
+      // Split by Question:/Answer: pattern
+      const questionBlocks = generatedText.split(/Question:/).slice(1); // Skip first element which is empty
       
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim()
-          .replace(/^\d+[\.\)]\s*/, '') // Remove numeric prefixes like "1." or "1)"
-          .replace(/^\*\*|\*\*$/g, '') // Remove markdown-style asterisks
-          .replace(/^Question:?\s*/i, ''); // Remove "Question:" prefix
+      questionBlocks.forEach((block, index) => {
+        // Split the block into question and answer parts
+        const parts = block.split(/Answer:/i);
         
-        if (line.toLowerCase().includes('answer:')) {
-          // We found the start of an answer
-          isReadingAnswer = true;
-          const parts = line.split(/answer:?/i);
-          if (parts.length > 1) {
-            // The line contains both question end and answer start
-            if (!currentQuestion) {
-              currentQuestion = parts[0].trim();
-            }
-            currentAnswer = parts[1].trim();
-          }
-        } else if (i < lines.length - 1 && 
-                  lines[i+1].trim().toLowerCase().includes('answer:')) {
-          // The next line is an answer, so this must be a question
-          currentQuestion = line;
-        } else if (isReadingAnswer) {
-          // Continue building the current answer
-          currentAnswer += ' ' + line;
-        } else if (line.trim() && line.endsWith('?')) {
-          // This is likely a question (ends with question mark)
-          currentQuestion = line;
-        } else if (currentQuestion && !isReadingAnswer) {
-          // Part of a multi-line question
-          currentQuestion += ' ' + line;
+        if (parts.length >= 2) {
+          const questionText = parts[0]
+            .replace(/^\d+[\.\)]\s*/, '') // Remove numeric prefixes like "1." or "1)"
+            .replace(/^\*\*|\*\*$/g, '') // Remove markdown-style asterisks
+            .trim();
+          
+          const answerText = parts[1].trim()
+            .replace(/^\*\*|\*\*$/g, ''); // Remove any markdown formatting
+          
+          parsedQuestions.push({
+            id: `q${Date.now()}-${index}`,
+            text: questionText,
+            answer: answerText
+          });
         }
+      });
+      
+      // Fallback parsing if the above didn't work
+      if (parsedQuestions.length === 0) {
+        // Try alternative parsing approach
+        const lines = generatedText.split('\n').filter(line => line.trim());
+        let currentQuestion = '';
+        let currentAnswer = '';
+        let isReadingAnswer = false;
         
-        // Check if we should save the current Q&A and move to the next
-        const isEndOfAnswer = isReadingAnswer && 
-          (i === lines.length - 1 || 
-           (lines[i+1].trim().endsWith('?') || 
-            /^\d+[\.\)]/.test(lines[i+1]) ||
-            lines[i+1].toLowerCase().includes('question')));
-        
-        if (isEndOfAnswer || (i === lines.length - 1 && currentQuestion)) {
-          if (currentQuestion) {
-            parsedQuestions.push({
-              id: `q${Date.now()}-${parsedQuestions.length}`,
-              text: currentQuestion.trim(),
-              answer: currentAnswer.trim() || "No answer provided"
-            });
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim()
+            .replace(/^\d+[\.\)]\s*/, '') // Remove numeric prefixes
+            .replace(/^\*\*|\*\*$/g, '') // Remove markdown-style asterisks
+            .replace(/^Question:?\s*/i, ''); // Remove "Question:" prefix
+          
+          if (line.toLowerCase().includes('answer:')) {
+            // We found the start of an answer
+            isReadingAnswer = true;
+            const parts = line.split(/answer:?/i);
+            if (parts.length > 1) {
+              // The line contains both question end and answer start
+              if (!currentQuestion) {
+                currentQuestion = parts[0].trim();
+              }
+              currentAnswer = parts[1].trim();
+            }
+          } else if (i < lines.length - 1 && 
+                    lines[i+1].trim().toLowerCase().includes('answer:')) {
+            // The next line is an answer, so this must be a question
+            currentQuestion = line;
+          } else if (isReadingAnswer) {
+            // Continue building the current answer
+            currentAnswer += ' ' + line;
+          } else if (line.trim() && !isReadingAnswer) {
+            // This is likely a question
+            currentQuestion = line;
           }
           
-          // Reset for next Q&A pair
-          currentQuestion = '';
-          currentAnswer = '';
-          isReadingAnswer = false;
-        }
-      }
-      
-      // If we didn't find any questions with the detailed parsing,
-      // try a simpler approach by splitting on "ANSWER:"
-      if (parsedQuestions.length === 0) {
-        const questionBlocks = generatedText.split(/\n\s*\n/).filter(block => block.trim());
-        
-        questionBlocks.forEach((block, index) => {
-          const parts = block.split(/ANSWER:/i);
-          if (parts.length >= 2) {
-            const questionText = parts[0]
-              .replace(/^\d+[\.\)]\s*/, '')
-              .replace(/^\*\*|\*\*$/g, '')
-              .replace(/^Question:?\s*/i, '')
-              .trim();
+          // Check if we should save the current Q&A and move to the next
+          const isEndOfAnswer = isReadingAnswer && 
+            (i === lines.length - 1 || 
+             (lines[i+1].trim().endsWith('?') || 
+              /^\d+[\.\)]/.test(lines[i+1]) ||
+              lines[i+1].toLowerCase().includes('question')));
+          
+          if (isEndOfAnswer || (i === lines.length - 1 && currentQuestion)) {
+            if (currentQuestion) {
+              parsedQuestions.push({
+                id: `q${Date.now()}-${parsedQuestions.length}`,
+                text: currentQuestion.trim(),
+                answer: currentAnswer.trim() || "No answer provided"
+              });
+            }
             
-            const answerText = parts[1].trim();
-            
-            parsedQuestions.push({
-              id: `q${Date.now()}-${index}`,
-              text: questionText,
-              answer: answerText
-            });
+            // Reset for next Q&A pair
+            currentQuestion = '';
+            currentAnswer = '';
+            isReadingAnswer = false;
           }
-        });
+        }
       }
       
       console.log(`Parsed ${parsedQuestions.length} questions from the response`);
@@ -185,7 +184,7 @@ const Index = () => {
       <main className="flex-1">
         <div className="container py-8 space-y-8">
           <div className="max-w-3xl mx-auto text-center space-y-4 mb-12">
-            <h1 className="text-4xl font-bold examace-gradient-text">
+            <h1 className="text-4xl font-bold gama-gradient-text">
               GAMA AI - Ace Your Exams With AI
             </h1>
             <p className="text-lg text-muted-foreground">

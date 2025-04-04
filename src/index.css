@@ -97,22 +97,22 @@
   }
 }
 
-.examace-gradient-text {
+.gama-gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-examace-purple to-examace-blue;
 }
 
-.examace-gradient-bg {
+.gama-gradient-bg {
   @apply bg-gradient-to-r from-examace-purple to-examace-blue;
 }
 
-.examace-card {
+.gama-card {
   @apply backdrop-blur-sm border shadow-lg rounded-xl;
 }
 
-.light .examace-card {
+.light .gama-card {
   @apply bg-white/70 border-white/20;
 }
 
-.dark .examace-card {
+.dark .gama-card {
   @apply bg-black/20 border-white/10;
 }

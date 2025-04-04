@@ -98,10 +98,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
   };
 
   return (
-    <Card className="examace-card w-full h-[500px] flex flex-col">
+    <Card className="gama-card w-full h-[500px] flex flex-col">
       <CardContent className="pt-6 h-full flex flex-col">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold examace-gradient-text">Chat with Your Study Material</h2>
+          <h2 className="text-xl font-semibold gama-gradient-text">Chat with Your Study Material</h2>
           {contentSource && (
             <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
               {contentSource}
@@ -173,7 +173,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
           <Button 
             onClick={handleSendMessage} 
             disabled={!inputMessage.trim() || isLoading}
-            className="examace-gradient-bg shrink-0"
+            className="gama-gradient-bg shrink-0"
             size="icon"
           >
             <Send className="h-5 w-5" />

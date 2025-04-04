@@ -9,8 +9,8 @@ const Header: React.FC = () => {
     <header className="border-b py-4 w-full">
       <div className="container flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <GraduationCap className="h-7 w-7 examace-gradient-text" />
-          <span className="font-bold text-xl examace-gradient-text">GAMA AI</span>
+          <GraduationCap className="h-7 w-7 gama-gradient-text" />
+          <span className="font-bold text-xl gama-gradient-text">GAMA AI</span>
         </Link>
         
         <div className="flex items-center gap-4">

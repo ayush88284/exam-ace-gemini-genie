@@ -52,7 +52,7 @@ serve(async (req) => {
           }
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.2,
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 1024,
@@ -65,15 +65,15 @@ serve(async (req) => {
           {
             parts: [
               { 
-                text: `You are an AI study assistant. Generate exactly ${numQuestions} questions with answers based ONLY on the following content. You must NOT generate any questions about topics not directly covered in this content. Format each question as a plain question without any prefixes, followed by "ANSWER:" and then the answer. Do not include any special characters, numbers, or asterisks at the beginning of questions. The content is:\n\n${content}` 
+                text: `You are an AI study assistant. Generate EXACTLY ${numQuestions} questions with answers based STRICTLY AND ONLY on the following content. These questions must be directly related to the exact material provided below, with no external knowledge or assumptions. Format each question as: "Question: [question text]" followed by "Answer: [answer text]" on a new line. DO NOT number the questions. DO NOT use any special characters, markdown formatting, or asterisks. The content is:\n\n${content}` 
               }
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
+          temperature: 0.1, // Lower temperature for more deterministic output
+          topK: 20,
+          topP: 0.8,
           maxOutputTokens: 2048,
         }
       };
