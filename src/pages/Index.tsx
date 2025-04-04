@@ -63,92 +63,55 @@ const Index = () => {
       const generatedText = data.generatedText || '';
       console.log("Generated text preview:", generatedText.substring(0, 300) + "...");
       
-      // Improved parsing logic to extract questions and answers
+      // Enhanced parsing logic to correctly extract questions and answers
       const parsedQuestions: Question[] = [];
       
-      // Split by Question:/Answer: pattern
-      const questionBlocks = generatedText.split(/Question:/).slice(1); // Skip first element which is empty
+      // Split by "Question:" and "Answer:" patterns, handling the response format more carefully
+      const lines = generatedText.split('\n');
+      let currentQuestion = '';
+      let currentAnswer = '';
+      let isCollectingAnswer = false;
       
-      questionBlocks.forEach((block, index) => {
-        // Split the block into question and answer parts
-        const parts = block.split(/Answer:/i);
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
         
-        if (parts.length >= 2) {
-          const questionText = parts[0]
-            .replace(/^\d+[\.\)]\s*/, '') // Remove numeric prefixes like "1." or "1)"
-            .replace(/^\*\*|\*\*$/g, '') // Remove markdown-style asterisks
-            .trim();
-          
-          const answerText = parts[1].trim()
-            .replace(/^\*\*|\*\*$/g, ''); // Remove any markdown formatting
-          
-          parsedQuestions.push({
-            id: `q${Date.now()}-${index}`,
-            text: questionText,
-            answer: answerText
-          });
-        }
-      });
-      
-      // Fallback parsing if the above didn't work
-      if (parsedQuestions.length === 0) {
-        // Try alternative parsing approach
-        const lines = generatedText.split('\n').filter(line => line.trim());
-        let currentQuestion = '';
-        let currentAnswer = '';
-        let isReadingAnswer = false;
-        
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].trim()
-            .replace(/^\d+[\.\)]\s*/, '') // Remove numeric prefixes
-            .replace(/^\*\*|\*\*$/g, '') // Remove markdown-style asterisks
-            .replace(/^Question:?\s*/i, ''); // Remove "Question:" prefix
-          
-          if (line.toLowerCase().includes('answer:')) {
-            // We found the start of an answer
-            isReadingAnswer = true;
-            const parts = line.split(/answer:?/i);
-            if (parts.length > 1) {
-              // The line contains both question end and answer start
-              if (!currentQuestion) {
-                currentQuestion = parts[0].trim();
-              }
-              currentAnswer = parts[1].trim();
-            }
-          } else if (i < lines.length - 1 && 
-                    lines[i+1].trim().toLowerCase().includes('answer:')) {
-            // The next line is an answer, so this must be a question
-            currentQuestion = line;
-          } else if (isReadingAnswer) {
-            // Continue building the current answer
-            currentAnswer += ' ' + line;
-          } else if (line.trim() && !isReadingAnswer) {
-            // This is likely a question
-            currentQuestion = line;
+        if (line.toLowerCase().startsWith('question:')) {
+          // If we were already collecting a previous Q&A pair, save it
+          if (currentQuestion && currentAnswer) {
+            parsedQuestions.push({
+              id: `q${Date.now()}-${parsedQuestions.length}`,
+              text: currentQuestion.replace(/^\*\*|\*\*$/g, '').trim(), // Remove any ** markdown
+              answer: currentAnswer.replace(/^\*\*|\*\*$/g, '').trim() // Remove any ** markdown
+            });
           }
           
-          // Check if we should save the current Q&A and move to the next
-          const isEndOfAnswer = isReadingAnswer && 
-            (i === lines.length - 1 || 
-             (lines[i+1].trim().endsWith('?') || 
-              /^\d+[\.\)]/.test(lines[i+1]) ||
-              lines[i+1].toLowerCase().includes('question')));
-          
-          if (isEndOfAnswer || (i === lines.length - 1 && currentQuestion)) {
-            if (currentQuestion) {
-              parsedQuestions.push({
-                id: `q${Date.now()}-${parsedQuestions.length}`,
-                text: currentQuestion.trim(),
-                answer: currentAnswer.trim() || "No answer provided"
-              });
-            }
-            
-            // Reset for next Q&A pair
-            currentQuestion = '';
-            currentAnswer = '';
-            isReadingAnswer = false;
-          }
+          // Start a new question
+          currentQuestion = line.substring("Question:".length).trim();
+          currentAnswer = '';
+          isCollectingAnswer = false;
+        } else if (line.toLowerCase().startsWith('answer:')) {
+          // Start collecting the answer
+          currentAnswer = line.substring("Answer:".length).trim();
+          isCollectingAnswer = true;
+        } else if (line === '') {
+          // Empty line - could be a separator between Q&A pairs
+          continue;
+        } else if (isCollectingAnswer) {
+          // Continue building the current answer
+          currentAnswer += ' ' + line;
+        } else if (currentQuestion) {
+          // If we have a question but no answer yet, this might be part of the question
+          currentQuestion += ' ' + line;
         }
+      }
+      
+      // Don't forget to add the last Q&A pair if we have one
+      if (currentQuestion && currentAnswer) {
+        parsedQuestions.push({
+          id: `q${Date.now()}-${parsedQuestions.length}`,
+          text: currentQuestion.replace(/^\*\*|\*\*$/g, '').trim(),
+          answer: currentAnswer.replace(/^\*\*|\*\*$/g, '').trim()
+        });
       }
       
       console.log(`Parsed ${parsedQuestions.length} questions from the response`);
@@ -160,6 +123,8 @@ const Index = () => {
         toast.warning("Could not extract questions from the generated content. Please try again with different content.");
       } else if (parsedQuestions.length < parseInt(questionCount)) {
         toast.info(`Only extracted ${parsedQuestions.length} questions out of the requested ${questionCount}`);
+      } else {
+        toast.success(`Generated ${parsedQuestions.length} questions from your study material`);
       }
       
     } catch (error) {

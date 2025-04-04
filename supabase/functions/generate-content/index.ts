@@ -59,21 +59,27 @@ serve(async (req) => {
         }
       };
     } else if (type === 'generate-questions') {
-      // For generating questions - with more specific instructions
+      // For generating questions - with stricter instructions to use ONLY the content provided
       payload = {
         contents: [
           {
             parts: [
               { 
-                text: `You are an AI study assistant. Generate EXACTLY ${numQuestions} questions with answers based STRICTLY AND ONLY on the following content. These questions must be directly related to the exact material provided below, with no external knowledge or assumptions. Format each question as: "Question: [question text]" followed by "Answer: [answer text]" on a new line. DO NOT number the questions. DO NOT use any special characters, markdown formatting, or asterisks. The content is:\n\n${content}` 
+                text: `You are an AI study assistant named GAMA AI. Generate EXACTLY ${numQuestions} questions with answers based STRICTLY AND ONLY on the following content. 
+DO NOT use any external knowledge about machine learning, AI, or any other topics not explicitly mentioned in the provided content.
+Format your response with each question in the format: "Question: [question text]" on its own line, followed by "Answer: [answer text]" on the next line. 
+Each question and answer pair should be separated by a blank line. Do NOT number the questions. Do NOT include any additional information, markdown formatting, or special characters.
+The ONLY things you are allowed to reference are facts, terms, and concepts mentioned explicitly in this exact text:
+
+${content}`
               }
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.1, // Lower temperature for more deterministic output
-          topK: 20,
-          topP: 0.8,
+          temperature: 0.05, // Very low temperature to be much more deterministic
+          topK: 10,
+          topP: 0.7,
           maxOutputTokens: 2048,
         }
       };
