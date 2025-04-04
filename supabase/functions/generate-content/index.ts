@@ -59,17 +59,30 @@ serve(async (req) => {
         }
       };
     } else if (type === 'generate-questions') {
-      // For generating questions - with stricter instructions to use ONLY the content provided
+      // For generating questions - with much stricter instructions to use ONLY the content provided
       payload = {
         contents: [
           {
             parts: [
               { 
-                text: `You are an AI study assistant named GAMA AI. Generate EXACTLY ${numQuestions} questions with answers based STRICTLY AND ONLY on the following content. 
-DO NOT use any external knowledge about machine learning, AI, or any other topics not explicitly mentioned in the provided content.
-Format your response with each question in the format: "Question: [question text]" on its own line, followed by "Answer: [answer text]" on the next line. 
-Each question and answer pair should be separated by a blank line. Do NOT number the questions. Do NOT include any additional information, markdown formatting, or special characters.
-The ONLY things you are allowed to reference are facts, terms, and concepts mentioned explicitly in this exact text:
+                text: `You are an AI study assistant named GAMA AI. Your task is to generate EXACTLY ${numQuestions} questions with answers based EXCLUSIVELY on the content provided below.
+
+IMPORTANT RULES:
+1. ONLY use information directly stated in the provided content.
+2. DO NOT use any external knowledge about any topic.
+3. DO NOT make up information or facts that are not explicitly in the text.
+4. If the content is about history, only ask about the historical facts in the content.
+5. If the content is about science, only ask about the scientific concepts in the content.
+6. NEVER generate questions about machine learning unless the document is specifically about machine learning.
+7. Create questions only from the exact text provided, not based on general knowledge of the subject.
+
+Format your response as follows:
+Question: [question text]
+Answer: [answer text]
+
+(Leave a blank line between each question-answer pair)
+
+Here is the ONLY content you should use:
 
 ${content}`
               }
@@ -77,9 +90,9 @@ ${content}`
           }
         ],
         generationConfig: {
-          temperature: 0.05, // Very low temperature to be much more deterministic
+          temperature: 0.01, // Extremely low temperature to be highly deterministic
           topK: 10,
-          topP: 0.7,
+          topP: 0.5,
           maxOutputTokens: 2048,
         }
       };

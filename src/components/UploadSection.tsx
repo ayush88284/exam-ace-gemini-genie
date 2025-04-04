@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -246,9 +247,9 @@ Many plant and animal species are struggling to adapt to rapidly changing condit
   };
 
   return (
-    <Card className="examace-card w-full">
+    <Card className="w-full">
       <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-4 examace-gradient-text">Upload Your Study Material</h2>
+        <h2 className="text-xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500">Upload Your Study Material</h2>
         <Tabs defaultValue="text" className="w-full">
           <TabsList className="w-full mb-6">
             <TabsTrigger value="file" className="flex items-center gap-2 flex-1">
@@ -290,7 +291,7 @@ Many plant and animal species are struggling to adapt to rapidly changing condit
             <Button 
               onClick={handleFileUpload} 
               disabled={!selectedFile || isUploading} 
-              className="w-full examace-gradient-bg"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white"
             >
               {isUploading ? "Processing..." : "Upload & Process"}
             </Button>
@@ -306,7 +307,7 @@ Many plant and animal species are struggling to adapt to rapidly changing condit
             <Button 
               onClick={handleTextSubmit} 
               disabled={!textInput.trim()} 
-              className="w-full examace-gradient-bg"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white"
             >
               Process Text
             </Button>
@@ -326,7 +327,7 @@ Many plant and animal species are struggling to adapt to rapidly changing condit
               <Button 
                 onClick={handleUrlSubmit} 
                 disabled={!urlInput.trim() || isUploading} 
-                className="w-full examace-gradient-bg"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white"
               >
                 {isUploading ? "Processing..." : "Fetch & Process"}
               </Button>

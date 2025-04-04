@@ -42,7 +42,7 @@ const Index = () => {
     }
     
     try {
-      // Call our Supabase Edge Function
+      // Call our Supabase Edge Function with explicit document content
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
           content: textContent,
@@ -80,8 +80,8 @@ const Index = () => {
           if (currentQuestion && currentAnswer) {
             parsedQuestions.push({
               id: `q${Date.now()}-${parsedQuestions.length}`,
-              text: currentQuestion.replace(/^\*\*|\*\*$/g, '').trim(), // Remove any ** markdown
-              answer: currentAnswer.replace(/^\*\*|\*\*$/g, '').trim() // Remove any ** markdown
+              text: currentQuestion.replace(/^\*\*|\*\*$|"/g, '').trim(), // Remove any ** markdown and quotes
+              answer: currentAnswer.replace(/^\*\*|\*\*$|"/g, '').trim() // Remove any ** markdown and quotes
             });
           }
           
@@ -109,8 +109,8 @@ const Index = () => {
       if (currentQuestion && currentAnswer) {
         parsedQuestions.push({
           id: `q${Date.now()}-${parsedQuestions.length}`,
-          text: currentQuestion.replace(/^\*\*|\*\*$/g, '').trim(),
-          answer: currentAnswer.replace(/^\*\*|\*\*$/g, '').trim()
+          text: currentQuestion.replace(/^\*\*|\*\*$|"/g, '').trim(),
+          answer: currentAnswer.replace(/^\*\*|\*\*$|"/g, '').trim()
         });
       }
       
