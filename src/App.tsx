@@ -35,6 +35,25 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Route that redirects authenticated users to dashboard
+const AuthenticatedRedirect = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useSupabaseAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (user) {
+    return <Navigate to="/app" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -43,7 +62,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout><Index /></Layout>} />
+            <Route path="/" element={
+              <AuthenticatedRedirect>
+                <Layout>
+                  <Index />
+                </Layout>
+              </AuthenticatedRedirect>
+            } />
             <Route path="/app" element={
               <ProtectedRoute>
                 <Layout>
