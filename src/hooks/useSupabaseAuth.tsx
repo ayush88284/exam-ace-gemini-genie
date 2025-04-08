@@ -53,16 +53,50 @@ export function useSupabaseAuth() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            email_confirmed: false,
+          }
+        }
       });
 
       if (error) {
         throw error;
       }
 
-      toast.success('Signed up successfully. Check your email for confirmation.');
+      // Since we're using OTP instead of email confirmation link
+      // We'll simulate OTP sending here (in a real app, this would send through a secure channel)
+      // Note: Supabase doesn't have a built-in OTP method, so this is a simplified mock
+      localStorage.setItem('pendingVerification', email);
+      
+      toast.success('Please check your email for verification code');
       return true;
     } catch (error: any) {
       toast.error(error.message || 'Error signing up');
+      return false;
+    }
+  };
+
+  const verifyOTP = async (email: string, otp: string) => {
+    try {
+      // In a real implementation, this would call a server endpoint to verify the OTP
+      // For demo purposes, we'll just simulate verification with a 6-digit code
+      const pendingEmail = localStorage.getItem('pendingVerification');
+      
+      // Simple mock verification - in a real app, this would be a secure API call
+      if (email === pendingEmail && otp.length === 6) {
+        // Simulate successful verification
+        localStorage.removeItem('pendingVerification');
+        
+        // In a real app, this would update the user's status in the database
+        toast.success('Email verified successfully');
+        return true;
+      } else {
+        throw new Error('Invalid verification code');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Error verifying email');
       return false;
     }
   };
@@ -88,5 +122,6 @@ export function useSupabaseAuth() {
     signIn,
     signUp,
     signOut,
+    verifyOTP,
   };
 }

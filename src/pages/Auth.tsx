@@ -10,6 +10,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { GraduationCap, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { 
+  InputOTP, 
+  InputOTPGroup, 
+  InputOTPSlot 
+} from "@/components/ui/input-otp";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -17,7 +22,10 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
-  const { signIn, signUp, user } = useSupabaseAuth();
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const { signIn, signUp, user, verifyOTP } = useSupabaseAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -70,16 +78,51 @@ const Auth = () => {
         throw new Error("Sign up failed");
       }
       
-      toast({
-        title: "Account created successfully!",
-        description: "You can now sign in with your credentials.",
-      });
+      setShowOTPVerification(true);
       
-      setActiveTab("signin");
+      toast({
+        title: "Verification code sent!",
+        description: "Please check your email for the OTP code.",
+      });
     } catch (error: any) {
       toast({
         title: "Sign up failed",
         description: error.message || "Please check your information and try again.",
+        variant: "destructive",
+      });
+      setShowOTPVerification(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      if (!otp || otp.length !== 6) {
+        throw new Error("Please enter a valid 6-digit code");
+      }
+      
+      const success = await verifyOTP(email, otp);
+      
+      if (!success) {
+        throw new Error("Invalid verification code");
+      }
+      
+      toast({
+        title: "Email verified successfully!",
+        description: "You can now sign in with your credentials.",
+      });
+      
+      setShowOTPVerification(false);
+      setActiveTab("signin");
+    } catch (error: any) {
+      setOtpError(error.message || "Verification failed. Please try again.");
+      toast({
+        title: "Verification failed",
+        description: error.message || "Please check the code and try again.",
         variant: "destructive",
       });
     } finally {
@@ -127,144 +170,201 @@ const Auth = () => {
         
         <Card className="gama-card backdrop-blur-sm shadow-xl">
           <CardContent className="pt-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin">
-                <motion.form 
-                  onSubmit={handleSignIn}
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-6"
-                >
-                  <motion.div variants={itemVariants}>
-                    <Label htmlFor="signin-email" className="mb-2 block">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        className="pl-10"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
+            {showOTPVerification ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 py-4"
+              >
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold">Email Verification</h2>
+                  <p className="text-sm text-muted-foreground">
+                    We've sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>
+                  </p>
+                </div>
+                
+                <form onSubmit={handleVerifyOTP} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="otp" className="text-center block">Verification Code</Label>
+                    <div className="flex justify-center">
+                      <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
                     </div>
-                  </motion.div>
+                    {otpError && <p className="text-destructive text-sm text-center">{otpError}</p>}
+                  </div>
                   
-                  <motion.div variants={itemVariants}>
-                    <Label htmlFor="signin-password" className="mb-2 block">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signin-password"
-                        type="password"
-                        placeholder="Enter your password"
-                        className="pl-10"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </motion.div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
+                    disabled={isLoading || otp.length !== 6}
+                  >
+                    {isLoading ? "Verifying..." : "Verify Email"}
+                  </Button>
                   
-                  <motion.div variants={itemVariants}>
+                  <div className="text-center">
                     <Button 
-                      type="submit" 
-                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
-                      disabled={isLoading}
+                      variant="link" 
+                      type="button"
+                      onClick={() => {
+                        setShowOTPVerification(false);
+                        setActiveTab("signin");
+                      }}
+                      className="text-sm text-muted-foreground"
                     >
-                      {isLoading ? "Signing in..." : "Sign In"}
-                      <ArrowRight className="h-4 w-4" />
+                      Back to Sign In
                     </Button>
-                  </motion.div>
-                </motion.form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <motion.form 
-                  onSubmit={handleSignUp}
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-6"
-                >
-                  <motion.div variants={itemVariants}>
-                    <Label htmlFor="signup-name" className="mb-2 block">
-                      Name
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="Enter your name"
-                        className="pl-10"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div variants={itemVariants}>
-                    <Label htmlFor="signup-email" className="mb-2 block">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        className="pl-10"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div variants={itemVariants}>
-                    <Label htmlFor="signup-password" className="mb-2 block">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="Create a password"
-                        className="pl-10"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div variants={itemVariants}>
-                    <Button 
-                      type="submit" 
-                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Creating account..." : "Create Account"}
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </motion.div>
-                </motion.form>
-              </TabsContent>
-            </Tabs>
+                  </div>
+                </form>
+              </motion.div>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="signin">
+                  <motion.form 
+                    onSubmit={handleSignIn}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-6"
+                  >
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="signin-email" className="mb-2 block">
+                        Email
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-email"
+                          type="email"
+                          placeholder="Enter your email"
+                          className="pl-10"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="signin-password" className="mb-2 block">
+                        Password
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-password"
+                          type="password"
+                          placeholder="Enter your password"
+                          className="pl-10"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants}>
+                      <Button 
+                        type="submit" 
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Signing in..." : "Sign In"}
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  </motion.form>
+                </TabsContent>
+                
+                <TabsContent value="signup">
+                  <motion.form 
+                    onSubmit={handleSignUp}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-6"
+                  >
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="signup-name" className="mb-2 block">
+                        Name
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Enter your name"
+                          className="pl-10"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="signup-email" className="mb-2 block">
+                        Email
+                      </Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="Enter your email"
+                          className="pl-10"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="signup-password" className="mb-2 block">
+                        Password
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          placeholder="Create a password"
+                          className="pl-10"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants}>
+                      <Button 
+                        type="submit" 
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Creating account..." : "Create Account"}
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  </motion.form>
+                </TabsContent>
+              </Tabs>
+            )}
           </CardContent>
         </Card>
         

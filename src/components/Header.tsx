@@ -1,88 +1,250 @@
 
 import React from "react";
-import { ThemeToggle } from "./ThemeProvider";
-import { GraduationCap, LogIn, User } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Moon, Sun, Menu, GraduationCap, User, LogOut } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
-const Header: React.FC = () => {
+const Header = () => {
+  const { setTheme } = useTheme();
   const { user, signOut } = useSupabaseAuth();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+    toast.success("Signed out successfully");
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const navItems = [
+    { label: "Home", path: "/" },
+    { label: "Learn More", path: "/learn-more" },
+    { label: "About Us", path: "/about" },
+  ];
+
+  // Additional nav items for authenticated users
+  const authNavItems = [
+    { label: "Dashboard", path: "/app" },
+  ];
 
   return (
-    <header className="border-b py-4 w-full bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="container flex items-center justify-between">
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex items-center justify-between h-16 px-4 md:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <motion.div
-            whileHover={{ rotate: 5 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
-            <GraduationCap className="h-7 w-7 gama-gradient-text" />
-          </motion.div>
-          <span className="font-bold text-xl gama-gradient-text">GAMA AI</span>
+          <GraduationCap className="h-6 w-6 gama-gradient-text" />
+          <span className="font-bold text-xl hidden sm:inline-block gama-gradient-text">
+            GAMA AI
+          </span>
         </Link>
-        
-        <div className="flex items-center gap-4">
-          <nav className="hidden md:flex items-center gap-6 mr-4">
-            <Link to="/" className={`text-sm font-medium transition-colors hover:text-primary ${location.pathname === '/' ? 'text-primary' : 'text-muted-foreground'}`}>
-              Home
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                isActive(item.path)
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
+              {item.label}
             </Link>
-            {user && (
-              <Link to="/app" className={`text-sm font-medium transition-colors hover:text-primary ${location.pathname === '/app' ? 'text-primary' : 'text-muted-foreground'}`}>
-                Dashboard
-              </Link>
-            )}
-          </nav>
-          
-          <ThemeToggle />
-          
+          ))}
+          {user && authNavItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary",
+                isActive(item.path)
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  <User className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem className="text-muted-foreground">
-                  {user.email}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/app">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={signOut}>
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                  >
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/app")}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" size="sm" className="hidden md:flex">
-                <Link to="/auth">Sign In</Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="hidden sm:flex"
+              >
+                Sign In
               </Button>
-              <Button asChild size="sm" className="hidden md:flex">
-                <Link to="/auth?tab=signup">Sign Up</Link>
-              </Button>
-              <Button asChild variant="outline" className="md:hidden flex items-center gap-2">
-                <Link to="/auth">
-                  <LogIn className="h-4 w-4" />
-                  <span>Sign In</span>
-                </Link>
+              <Button
+                onClick={() => {
+                  navigate("/auth");
+                  setTimeout(() => {
+                    const signupTab = document.querySelector('[value="signup"]');
+                    if (signupTab instanceof HTMLElement) {
+                      signupTab.click();
+                    }
+                  }, 100);
+                }}
+                size="sm"
+                className="bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 hidden sm:flex"
+              >
+                Sign Up
               </Button>
             </div>
           )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                System
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Mobile menu button */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      {isMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="md:hidden bg-background/95 backdrop-blur-md border-b"
+        >
+          <div className="container py-4 space-y-3">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "block py-2 text-sm font-medium",
+                  isActive(item.path)
+                    ? "text-foreground"
+                    : "text-muted-foreground"
+                )}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {user && authNavItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "block py-2 text-sm font-medium",
+                  isActive(item.path)
+                    ? "text-foreground"
+                    : "text-muted-foreground"
+                )}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {!user && (
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigate("/auth");
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    navigate("/auth");
+                    setIsMenuOpen(false);
+                    setTimeout(() => {
+                      const signupTab = document.querySelector(
+                        '[value="signup"]'
+                      );
+                      if (signupTab instanceof HTMLElement) {
+                        signupTab.click();
+                      }
+                    }, 100);
+                  }}
+                  className="w-full bg-gradient-to-r from-examace-purple to-examace-blue"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
     </header>
   );
 };
