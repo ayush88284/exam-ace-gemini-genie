@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import About from "./pages/About";
+import AboutUs from "./pages/About";
 import LearnMore from "./pages/LearnMore";
 import { useSupabaseAuth } from "./hooks/useSupabaseAuth";
 
@@ -52,7 +52,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/about" element={<Layout><About /></Layout>} />
+            <Route path="/about" element={<Layout><AboutUs /></Layout>} />
             <Route path="/learn-more" element={<Layout><LearnMore /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

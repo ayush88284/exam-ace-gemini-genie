@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -152,7 +151,7 @@ const Header = () => {
               <DropdownMenuItem onClick={() => setTheme("dark")}>
                 Dark
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
+              <DropdownMenuItem onClick={() => setTheme("system" as any)}>
                 System
               </DropdownMenuItem>
             </DropdownMenuContent>
