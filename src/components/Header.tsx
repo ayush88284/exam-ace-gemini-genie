@@ -1,10 +1,14 @@
 
 import React from "react";
 import { ThemeToggle } from "./ThemeProvider";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 const Header: React.FC = () => {
+  const { user, signOut } = useSupabaseAuth();
+
   return (
     <header className="border-b py-4 w-full">
       <div className="container flex items-center justify-between">
@@ -15,6 +19,18 @@ const Header: React.FC = () => {
         
         <div className="flex items-center gap-4">
           <ThemeToggle />
+          {user ? (
+            <Button variant="outline" onClick={signOut}>
+              Sign Out
+            </Button>
+          ) : (
+            <Button asChild variant="outline" className="flex items-center gap-2">
+              <Link to="/auth">
+                <LogIn className="h-4 w-4" />
+                <span>Sign In</span>
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

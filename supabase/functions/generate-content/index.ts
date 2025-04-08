@@ -22,7 +22,7 @@ serve(async (req) => {
     console.log('Function called with type:', type);
     console.log('Content length:', content?.length || 0);
     console.log('Number of questions requested:', numQuestions);
-    console.log('Content preview:', content?.substring(0, 500));
+    console.log('Content preview:', content?.substring(0, 100) + '...');
 
     // Validate content
     if (!content || content.length < 10) {
@@ -45,18 +45,36 @@ serve(async (req) => {
         contents: [
           {
             parts: [
-              { text: "You are an AI study assistant named GAMA AI. Use ONLY the following content to answer questions. Only provide information based on this content and nothing else:" },
+              { text: "You are an AI study assistant named GAMA AI. You must ONLY use the following content to answer questions. DO NOT use any other knowledge or information:" },
               { text: content },
               { text: prompt }
             ]
           }
         ],
         generationConfig: {
-          temperature: 0.1,
-          topK: 20,
-          topP: 0.8,
+          temperature: 0.05,
+          topK: 10,
+          topP: 0.5,
           maxOutputTokens: 1024,
-        }
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          }
+        ]
       };
     } else if (type === 'generate-questions') {
       // For generating questions - with extremely strict instructions to use ONLY the content provided
@@ -65,44 +83,59 @@ serve(async (req) => {
           {
             parts: [
               { 
-                text: `You are an AI study assistant named GAMA AI. Your task is to generate EXACTLY ${numQuestions} questions with answers based EXCLUSIVELY on the content provided below.
+                text: `You are an AI study assistant named GAMA AI. Generate EXACTLY ${numQuestions} questions with answers based EXCLUSIVELY on this EXACT content:
 
-CRITICAL INSTRUCTIONS:
-1. ONLY use information directly stated in the provided content.
-2. DO NOT use any external knowledge or general information about any topic.
-3. DO NOT make up information or facts that are not explicitly in the text.
-4. All of your questions and answers must be directly answerable from the specific content below.
-5. Avoid using any facts or knowledge that is not explicitly present in this content.
-6. If the content doesn't provide enough information for ${numQuestions} questions, generate fewer questions but NEVER invent information.
-7. DO NOT generate questions about machine learning unless the document is specifically about machine learning.
-8. Your response should contain ONLY questions and answers derived from the document, nothing else.
+### BEGIN CONTENT ###
+${content}
+### END CONTENT ###
 
-Format your response as follows:
-Question: [question text]
-Answer: [answer text]
+IMPORTANT RULES:
+1. ONLY use information directly stated in the provided content above.
+2. DO NOT generate questions about machine learning, AI, or algorithms UNLESS the document specifically discusses these topics.
+3. DO NOT use any external knowledge or general information about any topic.
+4. DO NOT make up information or facts that are not explicitly in the text.
+5. If the content doesn't contain enough information for ${numQuestions} questions, generate fewer questions but NEVER invent information.
+6. Keep your questions diverse and cover different parts of the document.
+7. Format each question with its answer as follows:
 
-(Leave a blank line between each question-answer pair)
+Question: [question text based only on the document]
+Answer: [answer text based only on the document]
 
-Here is the CONTENT you MUST use and ONLY use:
-
-${content}`
+Include a blank line between each question-answer pair.`
               }
             ]
           }
         ],
         generationConfig: {
           temperature: 0.01, // Extremely low temperature to be strictly deterministic
-          topK: 5,
-          topP: 0.3,
+          topK: 1,
+          topP: 0.1,
           maxOutputTokens: 2048,
-        }
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          }
+        ]
       };
     } else {
       throw new Error(`Invalid type: ${type}`);
     }
 
     console.log('Sending request to Gemini API...');
-    console.log('API Key used (first 5 chars):', apiKey.substring(0, 5));
     
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -124,7 +157,7 @@ ${content}`
     }
 
     const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    console.log('Generated text snippet:', generatedText.substring(0, 200));
+    console.log('Generated text snippet:', generatedText.substring(0, 100) + '...');
 
     return new Response(JSON.stringify({ generatedText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
