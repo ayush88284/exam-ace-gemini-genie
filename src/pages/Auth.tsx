@@ -17,7 +17,7 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
-  const { login, signup, user } = useSupabaseAuth();
+  const { signIn, signUp, user } = useSupabaseAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -32,10 +32,10 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await login(email, password);
+      const success = await signIn(email, password);
       
-      if (error) {
-        throw new Error(error.message);
+      if (!success) {
+        throw new Error("Sign in failed");
       }
       
       toast({
@@ -64,10 +64,10 @@ const Auth = () => {
         throw new Error("Please enter your name");
       }
       
-      const { error } = await signup(email, password, name);
+      const success = await signUp(email, password);
       
-      if (error) {
-        throw new Error(error.message);
+      if (!success) {
+        throw new Error("Sign up failed");
       }
       
       toast({
