@@ -72,7 +72,7 @@ export const LandingPage: React.FC = () => {
       <div className="absolute inset-0 -z-10 h-full w-full bg-background [background:radial-gradient(#9b87f510_1px,transparent_1px)] [background-size:32px_32px]"></div>
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
+      <section className="relative pt-12 pb-20 md:pt-16 md:pb-32">
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <motion.div 

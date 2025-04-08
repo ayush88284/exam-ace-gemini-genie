@@ -43,9 +43,11 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/app" element={
-              <Layout>
-                <Dashboard />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
             } />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

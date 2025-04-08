@@ -114,7 +114,7 @@
 }
 
 .dark .gama-card {
-  @apply bg-black/20 border-white/10;
+  @apply bg-gray-900/60 border-white/10 shadow-md;
 }
 
 @keyframes blob {

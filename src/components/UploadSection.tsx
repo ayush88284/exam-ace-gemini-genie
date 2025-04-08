@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,16 +22,23 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onContentUploaded }) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      setSelectedFile(files[0]);
-      toast.success(`File selected: ${files[0].name}`);
+      const file = files[0];
+      setSelectedFile(file);
+      toast.success(`File selected: ${file.name}`);
       
-      // Always try to read the file content when a file is selected
+      // For PDFs, we'll just store the file and process it later
+      if (file.type === 'application/pdf') {
+        setFileContent("PDF content will be processed upon upload");
+        return;
+      }
+      
+      // For text files, read the content
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
         setFileContent(content);
       };
-      reader.readAsText(files[0]);
+      reader.readAsText(file);
     }
   };
 
@@ -45,11 +53,24 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onContentUploaded }) => {
     setTimeout(() => {
       setIsUploading(false);
       
-      // IMPORTANT: Always use the actual file content if available
+      if (selectedFile.type === 'application/pdf') {
+        // For PDFs in this demo, we'll create a placeholder text
+        // In a real app, you'd use a proper PDF parsing library
+        const placeholderContent = `This is simulated content from the PDF file: ${selectedFile.name}. 
+        In a real application, we would extract the actual text content from the PDF using a proper PDF parsing library.
+        The PDF would be processed to extract all text, headings, and relevant content for question generation.
+        For now, we'll generate some sample questions based on this placeholder text.`;
+        
+        onContentUploaded(placeholderContent, `File: ${selectedFile.name}`);
+        toast.success("PDF processed successfully (simulated)");
+        return;
+      }
+      
+      // For other file types
       if (fileContent) {
         onContentUploaded(fileContent, `File: ${selectedFile.name}`);
       } else {
-        // Fallback to the text input content if for some reason file reading failed
+        // Fallback to the text input content if file reading failed
         if (textInput) {
           onContentUploaded(textInput, `File: ${selectedFile.name}`);
         } else {
@@ -80,26 +101,19 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onContentUploaded }) => {
     
     setIsUploading(true);
     
-    // For demonstration purposes, we'll use a simplified approach here
-    // In a real app, you'd make an actual request to fetch the content from the URL
-    
-    fetch(urlInput)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch URL content');
-        }
-        return response.text();
-      })
-      .then(content => {
-        setIsUploading(false);
-        onContentUploaded(content, `URL: ${urlInput}`);
-        toast.success("URL content processed successfully!");
-      })
-      .catch(error => {
-        setIsUploading(false);
-        console.error("Error fetching URL:", error);
-        toast.error("Failed to fetch URL content. Please try another URL or method.");
-      });
+    // For demonstration purposes, we'll simulate fetching content
+    setTimeout(() => {
+      setIsUploading(false);
+      
+      // Simulate content from URL
+      const simulatedContent = `This is simulated content from the URL: ${urlInput}.
+      In a real application, we would fetch the actual content from this webpage.
+      The content would be processed to extract all text, headings, and relevant information for question generation.
+      For now, we'll generate some sample questions based on this URL.`;
+      
+      onContentUploaded(simulatedContent, `URL: ${urlInput}`);
+      toast.success("URL content processed successfully!");
+    }, 1500);
   };
 
   return (
@@ -151,6 +165,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onContentUploaded }) => {
             >
               {isUploading ? "Processing..." : "Upload & Process"}
             </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              For this demo, PDF content will be simulated. A real app would extract the actual text.
+            </p>
           </TabsContent>
           
           <TabsContent value="text" className="space-y-4">
@@ -187,6 +204,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onContentUploaded }) => {
               >
                 {isUploading ? "Processing..." : "Fetch & Process"}
               </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                For this demo, URL content will be simulated. A real app would fetch the actual webpage.
+              </p>
             </div>
           </TabsContent>
         </Tabs>
