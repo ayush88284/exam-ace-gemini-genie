@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import UploadSection from "@/components/UploadSection";
 import QuestionList, { Question } from "@/components/QuestionList";
 import ChatInterface from "@/components/ChatInterface";
@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/select";
 import { MessageSquare, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { LandingPage } from "@/components/LandingPage";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Navigate } from "react-router-dom";
+import { generateEnhancedQuestions } from "@/integrations/supabase/aiHelpers";
 
 const Index = () => {
   const [content, setContent] = useState<string | null>(null);
@@ -54,25 +54,12 @@ const Index = () => {
     try {
       console.log("Generating questions with content length:", textContent.length);
       
-      // Call our Supabase Edge Function with explicit document content
-      const { data, error } = await supabase.functions.invoke('generate-content', {
-        body: {
-          content: textContent,
-          type: 'generate-questions',
-          numQuestions: parseInt(questionCount)
-        }
-      });
+      // Use our enhanced question generation
+      const generatedText = await generateEnhancedQuestions(
+        textContent, 
+        parseInt(questionCount)
+      );
       
-      if (error) {
-        throw new Error(error.message);
-      }
-      
-      if (!data || !data.generatedText) {
-        throw new Error('No content was generated. The API response was empty.');
-      }
-      
-      // Process the response to extract questions
-      const generatedText = data.generatedText || '';
       console.log("Generated text preview:", generatedText.substring(0, 300) + "...");
       
       // Enhanced parsing logic to correctly extract questions and answers

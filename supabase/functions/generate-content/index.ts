@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
@@ -12,6 +11,7 @@ interface GenerateContentRequest {
   numQuestions?: number;
   chatHistory?: Array<{ role: 'user' | 'assistant', content: string }>;
   prompt?: string;
+  enhancedPrompt?: string;
 }
 
 serve(async (req) => {
@@ -23,7 +23,7 @@ serve(async (req) => {
   try {
     console.log("Request received to generate-content function");
     const reqBody = await req.json();
-    const { content, type, numQuestions = 5, chatHistory, prompt } = reqBody as GenerateContentRequest;
+    const { content, type, numQuestions = 5, chatHistory, prompt, enhancedPrompt } = reqBody as GenerateContentRequest;
     
     console.log(`Received request type: ${type}`);
     console.log(`Content length: ${content?.length || 0}`);

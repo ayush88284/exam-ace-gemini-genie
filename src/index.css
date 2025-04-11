@@ -14,10 +14,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 260 38% 20%;
 
-    --primary: 260 50% 70%;
+    --primary: 260 75% 60%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 220 70% 70%;
+    --secondary: 220 70% 55%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 260 20% 96%;
@@ -37,32 +37,32 @@
   }
   
   .dark {
-    --background: 260 25% 8%;
+    --background: 260 30% 8%;
     --foreground: 260 15% 90%;
 
-    --card: 260 25% 12%;
+    --card: 260 30% 12%;
     --card-foreground: 260 10% 90%;
 
-    --popover: 260 25% 10%;
+    --popover: 260 30% 10%;
     --popover-foreground: 260 10% 90%;
 
-    --primary: 260 50% 70%;
+    --primary: 260 75% 60%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 220 70% 40%;
+    --secondary: 220 70% 50%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 260 20% 20%;
+    --muted: 260 25% 20%;
     --muted-foreground: 260 10% 70%;
 
-    --accent: 260 15% 20%;
+    --accent: 260 25% 20%;
     --accent-foreground: 260 10% 90%;
 
     --destructive: 0 74% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 260 20% 25%;
-    --input: 260 20% 25%;
+    --border: 260 25% 25%;
+    --input: 260 25% 25%;
     --ring: 260 50% 60%;
   }
 }
@@ -98,11 +98,15 @@
 }
 
 .gama-gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-examace-purple to-examace-blue;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-blue-500;
 }
 
 .gama-gradient-bg {
-  @apply bg-gradient-to-r from-examace-purple to-examace-blue;
+  @apply bg-gradient-to-r from-indigo-800 to-blue-700;
+}
+
+.gama-landing-gradient {
+  @apply bg-gradient-to-br from-indigo-950 via-purple-800 to-blue-600;
 }
 
 .gama-card {

@@ -1,6 +1,8 @@
 
 # GAMA AI - AI-Powered Study Assistant
 
+![GAMA AI](public/lovable-uploads/dc36c50d-109c-49d9-83fc-aba5ac3e5689.png)
+
 ## Overview
 
 GAMA AI is an advanced learning platform designed to transform how students prepare for exams and understand complex study materials. Using artificial intelligence, GAMA AI analyzes your study materials to generate customized practice questions, provide interactive chat assistance, and help you master difficult concepts.
@@ -25,6 +27,24 @@ GAMA AI is an advanced learning platform designed to transform how students prep
 - Track your progress and focus on areas that need improvement
 - Save time by focusing your study efforts on what matters most
 - Study more effectively with materials customized to your needs
+
+## User Interface
+
+Our redesigned UI features:
+- Clean, modern interface with intuitive navigation
+- Beautiful purple-blue gradient design
+- Clear call-to-action buttons for quick access to main features
+- Responsive design for all device sizes
+- Dark mode by default for reduced eye strain during study sessions
+
+## Enhanced AI Response Quality
+
+GAMA AI now features improved response generation:
+- More detailed and accurate answers
+- Better formatting of question-answer pairs
+- Enhanced educational value with explanations that target comprehension
+- Improved parsing of complex academic content
+- More natural conversational AI in chat mode
 
 ## Getting Started
 
@@ -54,7 +74,7 @@ npm run dev
 
 ## Technologies Used
 
-- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
 - **State Management**: React Context API, TanStack Query
 - **Authentication**: Supabase Auth
 - **Backend**: Supabase Edge Functions
@@ -111,6 +131,7 @@ Future development plans include:
 - Collaborative study sessions
 - Mobile application
 - Custom question templates
+- Integration with learning management systems
 
 ## License
 
