@@ -1,142 +1,131 @@
 
-# GAMA AI - AI-Powered Study Assistant
+# GAMA AI - Your Smart Exam Companion
 
-![GAMA AI](public/lovable-uploads/dc36c50d-109c-49d9-83fc-aba5ac3e5689.png)
+![GAMA AI Logo](public/gama-logo.svg)
 
-## Overview
+GAMA AI is a cutting-edge web platform designed to help students transform their study materials into focused, high-yield exam preparation content using artificial intelligence.
 
-GAMA AI is an advanced learning platform designed to transform how students prepare for exams and understand complex study materials. Using artificial intelligence, GAMA AI analyzes your study materials to generate customized practice questions, provide interactive chat assistance, and help you master difficult concepts.
+## 🚀 Features
 
-## Key Features
+- **Smart Question Generation**: Upload study materials and get AI-generated exam questions and answers
+- **Multiple Content Formats**: Support for documents (PDF, DOCX, TXT), text input, and web links
+- **Interactive AI Chat**: Discuss and explore your study materials with our AI assistant
+- **User Authentication**: Secure user accounts with email/password login
+- **Responsive Design**: Optimized experience across desktop, tablet, and mobile devices
+- **Dark/Light Mode**: Choose your preferred visual theme for comfortable studying
 
-### Smart Content Analysis
-- Upload PDFs, text documents, or paste content from your study materials
-- Our AI engine processes your content to identify key concepts and learning objectives
+## 🛠️ Technology Stack
 
-### Custom Question Generation
-- Create tailored practice questions based on your specific study materials
-- Adjust the number and complexity of questions to match your learning needs
-- Get detailed explanations with each answer to deepen your understanding
+- **Frontend**: React with TypeScript
+- **Styling**: Tailwind CSS with custom theme
+- **UI Components**: Shadcn UI component library
+- **Animations**: Framer Motion
+- **Authentication**: Supabase Auth
+- **Backend**: Supabase Edge Functions with OpenAI integration
+- **Routing**: React Router Dom
 
-### Interactive AI Chat
-- Ask follow-up questions about your study materials
-- Get clarification on difficult concepts
-- Have a conversation with an AI tutor that understands your specific content
+## 🔧 Getting Started
 
-### Personalized Learning Experience
-- Track your progress and focus on areas that need improvement
-- Save time by focusing your study efforts on what matters most
-- Study more effectively with materials customized to your needs
+### Prerequisites
 
-## User Interface
-
-Our redesigned UI features:
-- Clean, modern interface with intuitive navigation
-- Beautiful purple-blue gradient design
-- Clear call-to-action buttons for quick access to main features
-- Responsive design for all device sizes
-- Dark mode by default for reduced eye strain during study sessions
-
-## Enhanced AI Response Quality
-
-GAMA AI now features improved response generation:
-- More detailed and accurate answers
-- Better formatting of question-answer pairs
-- Enhanced educational value with explanations that target comprehension
-- Improved parsing of complex academic content
-- More natural conversational AI in chat mode
-
-## Getting Started
+- Node.js (v18 or higher)
+- npm or yarn
+- Supabase account 
+- OpenAI API key
 
 ### Installation
 
-```sh
-# Clone the repository
-git clone <repository-url>
-
-# Navigate to the project directory
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/gama-ai.git
 cd gama-ai
+```
 
-# Install dependencies
+2. Install dependencies
+```bash
 npm install
+# or
+yarn
+```
 
-# Start the development server
+3. Configure environment variables
+Create a `.env` file in the root directory with the following content:
+```
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+4. Start the development server
+```bash
 npm run dev
+# or
+yarn dev
 ```
 
-### Usage
-
-1. **Sign Up/Login**: Create an account or log in to access your personalized dashboard
-2. **Upload Content**: Upload your study materials (PDF, document) or paste text directly
-3. **Generate Questions**: Choose how many questions you want to create from your materials
-4. **Study & Practice**: Review the generated questions and test your knowledge
-5. **Chat for Clarity**: Use the AI chat feature to ask follow-up questions and deepen your understanding
-
-## Technologies Used
-
-- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
-- **State Management**: React Context API, TanStack Query
-- **Authentication**: Supabase Auth
-- **Backend**: Supabase Edge Functions
-- **AI Integration**: Custom AI models for content analysis and generation
-
-## Project Structure
-
-```
-src/
-├── components/         # Reusable UI components
-├── hooks/              # Custom React hooks
-├── integrations/       # Third-party service integrations
-├── lib/                # Utility functions and helpers
-├── pages/              # Application pages
-└── App.tsx             # Main application component
+5. Deploy Supabase Edge Functions
+```bash
+supabase functions deploy --project-ref your-project-ref
 ```
 
-## Features in Detail
+## 💡 Usage
 
-### Upload Section
-Users can upload study materials through:
-- PDF upload
-- Document upload
-- Direct text pasting
-- URL import (coming soon)
+1. **Sign Up/Log In**: Create an account or log in to access all features
+2. **Upload Material**: Upload PDFs, documents, or paste text from your study materials
+3. **Generate Questions**: Click "Generate Questions" to create exam-style questions and answers
+4. **Chat with AI**: Ask follow-up questions about the material to deepen your understanding
+5. **Save & Review**: Bookmark important questions for later review
 
-### Question Generation
-The AI analyzes uploaded content to create various question types:
-- Multiple-choice questions
-- Short-answer questions
-- Concept-based questions
-- Application questions
+## 📱 App Structure
 
-### AI Chat Interface
-A conversational interface that allows users to:
-- Ask specific questions about the content
-- Request explanations of difficult concepts
-- Get study tips based on the material
-- Request additional questions on specific topics
+- `/src`: Source code
+  - `/components`: Reusable UI components
+  - `/pages`: Main application pages
+  - `/hooks`: Custom React hooks
+  - `/integrations`: Third-party integrations (Supabase)
+  - `/lib`: Utility functions and helpers
+- `/public`: Static assets
+- `/supabase`: Supabase edge functions and configurations
 
-## Team
+## 🧩 Key Components
 
-GAMA AI was developed by:
-- **G**ouri - Lead Developer
-- **A**neri - UX Designer
-- **M**eet - AI Engineer
-- **A**yush - Product Manager
+- **Upload Interface**: Drag-and-drop file uploading with preview and processing
+- **Question Generation**: AI-powered question and answer creation with customizable settings
+- **Chat Interface**: Interactive conversation with context-aware AI assistant
+- **Authentication System**: Secure user authentication with email verification
+- **Dashboard**: User's personal space for managing study materials and saved content
 
-## Roadmap
+## 🔐 Security
 
-Future development plans include:
-- Flashcard generation and spaced repetition system
-- Progress tracking and analytics dashboard
-- Collaborative study sessions
-- Mobile application
-- Custom question templates
-- Integration with learning management systems
+- Row-Level Security (RLS) policies protect user data
+- Secure authentication with email verification
+- Protected routes ensure authorized access to user content
 
-## License
+## 🎨 Design & User Experience
+
+- Modern glassmorphism style with gradient accents
+- Micro-interactions and animations for engaging experience
+- Mobile-first responsive design
+- Consistent theme across all components
+- Accessible interface with keyboard navigation and screen reader support
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Contact
+## 📬 Contact
 
-For support or inquiries, please contact us at support@gama-ai.com
+For any questions or feedback, please reach out to [your-email@example.com](mailto:your-email@example.com).
+
+---
+
+Created with ❤️ by The GAMA AI Team

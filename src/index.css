@@ -74,6 +74,12 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    @apply font-semibold;
   }
   
   .light body {
@@ -121,6 +127,27 @@
   @apply bg-gray-900/60 border-white/10 shadow-md;
 }
 
+.gama-button-primary {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600 
+    hover:from-indigo-700 hover:to-purple-700 
+    text-white font-medium px-5 py-2.5 rounded-xl 
+    shadow-lg shadow-indigo-600/20 
+    transition-all duration-300 hover:shadow-indigo-600/40;
+}
+
+.gama-button-secondary {
+  @apply bg-white/10 backdrop-blur-sm border border-white/20 
+    hover:bg-white/20 text-white font-medium px-5 py-2.5 
+    rounded-xl transition-all duration-300;
+}
+
+.gama-input {
+  @apply bg-white/10 backdrop-blur-sm border border-white/20 
+    text-white rounded-xl px-4 py-2.5 
+    focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent
+    placeholder:text-white/50;
+}
+
 @keyframes blob {
   0% {
     transform: translate(0px, 0px) scale(1);
@@ -137,13 +164,129 @@
 }
 
 .animate-blob {
-  animation: blob 7s infinite ease-in-out;
+  animation: blob 15s infinite ease-in-out;
 }
 
 .animation-delay-2000 {
-  animation-delay: 2s;
+  animation-delay: 4s;
 }
 
 .animation-delay-4000 {
-  animation-delay: 4s;
+  animation-delay: 8s;
+}
+
+/* Split text animation */
+.split-text-animation span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glass card effect */
+.glass-card {
+  @apply backdrop-blur-md bg-white/10 border border-white/20 
+    shadow-xl rounded-2xl overflow-hidden;
+}
+
+/* Question cards */
+.question-card {
+  @apply glass-card hover:bg-white/20 transition-all 
+    cursor-pointer p-5 space-y-3;
+}
+
+/* Difficulty indicators */
+.difficulty-easy {
+  @apply text-green-400 border-green-400;
+}
+
+.difficulty-medium {
+  @apply text-yellow-400 border-yellow-400;
+}
+
+.difficulty-hard {
+  @apply text-red-400 border-red-400;
+}
+
+/* Animated answer dropdown */
+.answer-dropdown {
+  @apply overflow-hidden transition-all duration-300 ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-indigo-500/30 rounded-full hover:bg-indigo-500/50 transition-colors;
+}
+
+/* Content loader animation */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.content-loader {
+  @apply rounded-md;
+  background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+  background-size: 800px 104px;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Hover effects */
+.hover-lift {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+}
+
+/* Chat bubbles */
+.chat-bubble-user {
+  @apply bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%];
+}
+
+.chat-bubble-ai {
+  @apply bg-gray-800/80 text-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%];
+}
+
+/* Custom form styling */
+.form-input {
+  @apply bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white 
+    placeholder:text-white/50 focus:ring-2 focus:ring-indigo-500 
+    focus:border-transparent transition-all duration-200;
+}
+
+/* Upload zone */
+.upload-zone {
+  @apply border-2 border-dashed border-white/30 rounded-2xl p-6 
+    transition-all duration-300 hover:border-white/50 
+    flex flex-col items-center justify-center text-center gap-3;
+}
+
+.upload-zone-active {
+  @apply border-indigo-500 bg-indigo-500/10;
+}
+
+/* Micro-interactions */
+.micro-bounce {
+  @apply transition-transform hover:scale-105 active:scale-95 duration-200;
+}
+
+.micro-pulse {
+  @apply hover:animate-[pulse_1.5s_ease-in-out_infinite];
 }
