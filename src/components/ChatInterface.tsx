@@ -53,22 +53,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
     setIsLoading(true);
 
     try {
-      // Call our Supabase Edge Function
+      console.log("Sending chat request with content length:", studyContent?.length || 0);
+      
+      // Call our Supabase Edge Function with proper error handling
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
           prompt: inputMessage,
-          content: studyContent,
+          content: studyContent || "",
           type: 'chat'
         }
       });
       
       if (error) {
+        console.error("Supabase function error:", error);
         throw new Error(error.message);
+      }
+      
+      if (!data || !data.generatedText) {
+        console.error("Empty response from generate-content function");
+        throw new Error("No content was generated");
       }
       
       const aiResponse = {
         id: (Date.now() + 1).toString(),
-        content: data.generatedText || "I'm sorry, I couldn't process that request. Please try again.",
+        content: data.generatedText,
         isUser: false,
       };
       
@@ -80,7 +88,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
       // Fallback response
       const fallbackResponse = {
         id: (Date.now() + 1).toString(),
-        content: "I'm having trouble connecting to my knowledge base. Please try again in a moment.",
+        content: "I'm having trouble processing your study material. Please check that your content was properly uploaded and try again.",
         isUser: false,
       };
       

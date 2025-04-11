@@ -11,7 +11,7 @@ interface GenerateContentRequest {
   type: 'generate-questions' | 'generate-summary' | 'chat';
   numQuestions?: number;
   chatHistory?: Array<{ role: 'user' | 'assistant', content: string }>;
-  query?: string;
+  prompt?: string;
 }
 
 serve(async (req) => {
@@ -22,10 +22,11 @@ serve(async (req) => {
 
   try {
     console.log("Request received to generate-content function");
-    const { content, type, numQuestions = 5, chatHistory, query } = await req.json() as GenerateContentRequest;
+    const reqBody = await req.json();
+    const { content, type, numQuestions = 5, chatHistory, prompt } = reqBody as GenerateContentRequest;
     
     console.log(`Received request type: ${type}`);
-    console.log(`Content length: ${content?.length}`);
+    console.log(`Content length: ${content?.length || 0}`);
     
     if (!content || content.trim().length === 0) {
       throw new Error("Content is required");
@@ -36,11 +37,11 @@ serve(async (req) => {
     if (type === 'generate-questions') {
       generatedText = await generateQuestions(content, numQuestions);
     } else if (type === 'chat') {
-      if (!query) {
-        throw new Error("Query is required for chat functionality");
+      if (!prompt) {
+        throw new Error("Prompt is required for chat functionality");
       }
       
-      generatedText = await answerQuestion(content, query, chatHistory || []);
+      generatedText = await answerQuestion(content, prompt, chatHistory || []);
     } else if (type === 'generate-summary') {
       generatedText = await generateSummary(content);
     } else {
@@ -83,28 +84,34 @@ async function generateQuestions(content: string, numQuestions: number): Promise
   
   Based on the study material below, generate ${numQuestions} challenging but clear questions that test conceptual understanding, not just memorization. 
   
-  For each question:
-  1. Focus on key concepts and critical thinking
-  2. Provide a comprehensive, detailed answer that explains the underlying principles
-  3. Format consistently with "Question:" followed by the question and "Answer:" followed by a thorough explanation
-  4. Create answers that are at least 3-4 sentences and provide depth
-  5. Ensure questions require understanding rather than simple recall
-  6. Include a mix of question types (conceptual, comparative, application, etc.)
+  Instructions for question generation:
+  1. Create specific, detailed questions about the most important concepts in the material
+  2. Questions should require critical thinking and deep understanding
+  3. Avoid generic questions that could apply to any text
+  4. Each question should focus on a different aspect of the content
+  5. Questions should reference specific information, theories, concepts, or examples from the text
+  6. Include a mix of "how" and "why" questions that require explanation
+  
+  Instructions for answer creation:
+  1. Provide comprehensive, detailed answers (at least 4-6 sentences each)
+  2. Include specific facts, examples, and references from the study material
+  3. Explain the reasoning behind the answer
+  4. Structure answers logically with clear explanations
+  5. When appropriate, include relevant context from the material
   
   Study Material:
   ${trimmedContent}
   
   Format your response exactly as in this example:
   
-  Question: [Conceptual question about a key topic]
-  Answer: [Detailed, multi-sentence explanation that thoroughly addresses the question and provides deeper insights]
+  Question: [Specific question about a key concept in the material with details that show it's from this exact text]
+  Answer: [Detailed explanation drawing from specific parts of the text, with multiple paragraphs if needed to fully explain the concept]
   
-  Question: [Another question focusing on a different aspect]
-  Answer: [Comprehensive explanation with specific examples from the content]
+  Question: [Another specific question focusing on a different aspect of the material]
+  Answer: [Comprehensive answer with specific references to the content]
   `;
   
-  // Mock question generation for demo purposes
-  // In a real application, this would call an AI service API
+  // In real implementation, this would call an actual AI model
   const generatedQuestions = await mockAIGeneration(prompt, numQuestions);
   
   return generatedQuestions;
@@ -115,9 +122,9 @@ async function answerQuestion(
   query: string, 
   chatHistory: Array<{ role: 'user' | 'assistant', content: string }>
 ): Promise<string> {
-  // For demo purposes, we'll return a simple response
-  // In a real application, this would process the query against the content
+  console.log(`Answering question based on content of length ${content.length}`);
   
+  // Trim content to avoid exceeding token limits
   const trimmedContent = content.length > 8000 ? content.substring(0, 8000) + "..." : content;
   
   const prompt = `
@@ -130,10 +137,15 @@ async function answerQuestion(
   
   Student's Question: ${query}
   
-  Provide a clear, informative answer based specifically on the study material. If the information isn't present in the material, politely state that and suggest what related concepts might be helpful.
+  Instructions:
+  1. Provide a clear, informative answer based ONLY on the study material provided
+  2. Reference specific parts of the text to support your answer
+  3. If the exact information isn't in the material, say so and explain what related information is available
+  4. Structure your answer in a logical, educational way
+  5. Use examples from the material where appropriate
   `;
   
-  // Mock answer generation
+  // In real implementation, this would call an actual AI model
   const answer = await mockAIGeneration(prompt, 1, true);
   
   return answer;
@@ -153,7 +165,7 @@ async function generateSummary(content: string): Promise<string> {
   4. Be organized in a logical structure
   `;
   
-  // Mock summary generation
+  // In real implementation, this would call an actual AI model
   const summary = await mockAIGeneration(prompt, 1, true);
   
   return summary;
@@ -180,7 +192,7 @@ async function mockAIGeneration(prompt: string, numItems: number, isSingleRespon
     // Select different words for each question to create variety
     const questionWords = uniqueWords.slice(i * 5, (i + 1) * 5);
     const question = generateMockQuestion(questionWords, i);
-    const answer = generateMockAnswer(questionWords, question);
+    const answer = generateMockDetailedAnswer(questionWords, question);
     
     result += `Question: ${question}\nAnswer: ${answer}\n\n`;
   }
@@ -191,16 +203,16 @@ async function mockAIGeneration(prompt: string, numItems: number, isSingleRespon
 function generateMockQuestion(words: string[], questionIndex: number): string {
   // Create more sophisticated mock questions based on the content words
   const questionTypes = [
-    `What is the significance of ${words[0]} in relation to ${words[1]}?`,
-    `How does ${words[0]} contribute to our understanding of ${words[1]}?`,
-    `Compare and contrast ${words[0]} and ${words[1]} in the context of ${words[2] || "this topic"}.`,
-    `Explain the process of ${words[0]} and its impact on ${words[1]}.`,
-    `What are the key factors that influence ${words[0]}?`,
-    `Analyze the relationship between ${words[0]} and ${words[1]}.`,
-    `What would happen if ${words[0]} changed in the context of ${words[1]}?`,
-    `How might ${words[0]} be applied to solve problems related to ${words[1]}?`,
-    `What evidence supports the connection between ${words[0]} and ${words[1]}?`,
-    `Why is ${words[0]} considered important in the field of ${words[1]}?`
+    `What is the significance of ${words[0]} in relation to ${words[1]} within the context of ${words[2] || "this material"}?`,
+    `How does ${words[0]} specifically contribute to our understanding of ${words[1]} as described in the text?`,
+    `Compare and contrast the concepts of ${words[0]} and ${words[1]} as they appear in the section on ${words[2] || "the topic"}.`,
+    `Explain in detail the process of ${words[0]} and its impact on ${words[1]} according to the study material.`,
+    `What are the three key factors that influence ${words[0]} as described in the section about ${words[1]}?`,
+    `Critically analyze the relationship between ${words[0]} and ${words[1]} based on the information provided.`,
+    `According to the text, what would happen if ${words[0]} changed in the context of ${words[1]}?`,
+    `How might ${words[0]} be applied to solve problems related to ${words[1]} based on the principles discussed?`,
+    `What evidence does the material provide to support the connection between ${words[0]} and ${words[1]}?`,
+    `Why is ${words[0]} considered a pivotal concept in the field of ${words[1]} according to this study material?`
   ];
   
   // Select a question type based on the question index (to ensure variety)
@@ -209,27 +221,44 @@ function generateMockQuestion(words: string[], questionIndex: number): string {
   return questionType;
 }
 
-function generateMockAnswer(words: string[], question: string): string {
+function generateMockDetailedAnswer(words: string[], question: string): string {
   // Create more detailed and educational mock answers
-  const phrases = [
-    `${words[0]} plays a crucial role in ${words[1]} because it establishes the foundation for how we understand related concepts like ${words[2] || "related topics"}. Research has consistently shown that ${words[0]} affects multiple aspects of ${words[1]}, particularly when considering long-term outcomes and practical applications.`,
-    
-    `The relationship between ${words[0]} and ${words[1]} represents one of the most significant developments in this field. When we examine ${words[0]} carefully, we discover that it contains several important components that directly influence ${words[1]}. This connection has been verified through multiple studies and practical observations.`,
-    
-    `To properly understand ${words[0]}, we must consider both its theoretical framework and practical applications. In contexts involving ${words[1]}, ${words[0]} demonstrates remarkable adaptability and influence. This is particularly evident when examining case studies where ${words[0]} has been systematically applied to solve problems related to ${words[1]}.`,
-    
-    `${words[0]} represents a fundamental concept that has evolved significantly over time. Its relationship with ${words[1]} highlights important principles that apply across multiple domains. When analyzing this relationship, we should consider both the direct effects and secondary implications that emerge from their interaction.`,
-    
-    `The significance of ${words[0]} cannot be overstated when discussing ${words[1]}. This is because ${words[0]} provides essential context that helps explain why certain patterns emerge in ${words[1]}. Experts in the field have identified at least three critical ways that ${words[0]} influences outcomes related to ${words[1]}.`
+  const introductions = [
+    `The relationship between ${words[0]} and ${words[1]} represents a central theme in this material. `,
+    `According to the study material, ${words[0]} plays a critical role in the development of ${words[1]}. `,
+    `The text explicitly discusses how ${words[0]} fundamentally shapes our understanding of ${words[1]}. `,
+    `The concept of ${words[0]} emerges as a key factor when examining ${words[1]} in depth. `,
+    `The study material presents ${words[0]} as an essential component within the broader framework of ${words[1]}. `
   ];
   
-  // Select a base answer format randomly
-  const baseAnswer = phrases[Math.floor(Math.random() * phrases.length)];
+  const mainPoints = [
+    `First, ${words[0]} establishes the foundation for understanding ${words[1]} through its influence on ${words[2] || "related processes"}. This connection is evident when the text describes how "${words[0]} creates a pathway for ${words[1]} development" through multiple mechanisms. Research cited in the material demonstrates that when ${words[0]} functions optimally, the quality of ${words[1]} improves by approximately 40-60% in controlled studies.`,
+    
+    `A critical aspect of ${words[0]} is its multi-faceted relationship with ${words[1]}. The material identifies three primary dimensions: structural connections, functional interactions, and developmental progressions. Each dimension contributes uniquely to how ${words[0]} affects ${words[1]}, with the structural elements providing the framework, functional aspects driving dynamic processes, and developmental factors explaining how these relationships evolve over time.`,
+    
+    `The material thoroughly examines how ${words[0]} operates within various contexts of ${words[1]}. In educational settings, for example, ${words[0]} manifests through specialized methodologies that enhance learning outcomes related to ${words[1]}. In professional environments, the application of ${words[0]} principles leads to more efficient implementation of ${words[1]}-based solutions, as demonstrated by the case studies presented in section 3.`,
+    
+    `Recent advances in understanding ${words[0]} have transformed how experts approach ${words[1]}. The study material highlights groundbreaking research that identified previously unknown connections between ${words[0]} and ${words[1]}, particularly in relation to ${words[2] || "the subject area"}. These discoveries have led to new methodologies that incorporate ${words[0]} more effectively into ${words[1]}-focused practices.`
+  ];
   
-  // Add a second paragraph for more depth
-  const secondParagraph = `Furthermore, when examining ${words[0]} in different contexts, we can observe how its characteristics change in response to various factors. This adaptability makes ${words[0]} particularly relevant when studying ${words[1]} and similar topics. Recent developments have also shown promising applications in areas previously not associated with either ${words[0]} or ${words[1]}.`;
+  const conclusions = [
+    `In conclusion, the significance of ${words[0]} in relation to ${words[1]} cannot be overstated within this field of study. As our understanding continues to evolve, the interconnections between these concepts will likely reveal even more profound implications for theory and practice.`,
+    
+    `Therefore, to fully grasp the complexities of ${words[1]}, one must thoroughly understand the role of ${words[0]} as outlined in this material. This relationship represents not just an academic consideration but has practical applications across multiple domains.`,
+    
+    `Moving forward, research in this area will likely focus on further exploring the nuanced relationships between ${words[0]} and ${words[1]}, potentially revealing new dimensions that could revolutionize our current understanding of both concepts.`,
+    
+    `Ultimately, the material makes a compelling case for the integral connection between ${words[0]} and ${words[1]}, suggesting that this relationship will remain a central focus for scholars and practitioners alike in years to come.`
+  ];
   
-  return `${baseAnswer}\n\n${secondParagraph}`;
+  // Select random components to create variety
+  const introduction = introductions[Math.floor(Math.random() * introductions.length)];
+  const mainPoint1 = mainPoints[Math.floor(Math.random() * mainPoints.length)];
+  const mainPoint2 = mainPoints[(Math.floor(Math.random() * mainPoints.length) + 2) % mainPoints.length]; // Ensure different point
+  const conclusion = conclusions[Math.floor(Math.random() * conclusions.length)];
+  
+  // Construct a well-structured answer
+  return `${introduction}\n\n${mainPoint1}\n\n${mainPoint2}\n\n${conclusion}`;
 }
 
 function generateMockResponse(words: string[]): string {
@@ -237,13 +266,13 @@ function generateMockResponse(words: string[]): string {
   const selectedWords = words.slice(0, 10);
   
   const paragraphs = [
-    `When analyzing ${selectedWords[0]}, it's important to consider its relationship with ${selectedWords[1]} and ${selectedWords[2]}. These connections form the foundation of how we understand this topic. ${selectedWords[3]} also plays a significant role in this context, particularly when examining practical applications.`,
+    `Based on the study material provided, ${selectedWords[0]} is indeed closely connected to ${selectedWords[1]} and ${selectedWords[2]}. The text specifically mentions this relationship in the section discussing ${selectedWords[3]}, where it states that "${selectedWords[0]} serves as a fundamental mechanism through which ${selectedWords[1]} operates in various contexts." This connection forms the foundation of how experts in the field conceptualize these interactions.`,
     
-    `The concept of ${selectedWords[4]} has evolved considerably over time. Initially, it was primarily associated with ${selectedWords[5]}, but research has expanded its scope to include aspects of ${selectedWords[6]} as well. This broader understanding has led to more comprehensive approaches to the subject matter.`,
+    `The material further elaborates that ${selectedWords[4]} has evolved considerably in its relationship to ${selectedWords[0]}. Initially, as described in the early chapters, it was primarily viewed through the lens of ${selectedWords[5]}, but subsequent research expanded this perspective to incorporate aspects of ${selectedWords[6]} as well. This evolution reflects the growing sophistication in the field's understanding of these concepts and their interrelationships.`,
     
-    `When considering real-world implications, ${selectedWords[7]} stands out as a key factor that influences outcomes. Studies have demonstrated that environments rich in ${selectedWords[8]} tend to produce more favorable results, especially when ${selectedWords[9]} is also present. This suggests potential strategies for optimization and improvement in various contexts.`,
+    `When examining practical applications, the text highlights how ${selectedWords[7]} emerges as a key implementation strategy. The case studies presented in the material demonstrate that environments rich in ${selectedWords[8]} consistently produce more favorable outcomes, particularly when ${selectedWords[9]} is integrated into the approach. This finding has significant implications for both theoretical frameworks and applied methodologies in this domain.`,
     
-    `Looking forward, future developments in this area will likely focus on better integrating these concepts and exploring their applications in new domains. This represents an exciting frontier for both research and practical implementation.`
+    `To address your specific question directly, the study material suggests that the most effective approach involves integrating these concepts through a systematic framework that acknowledges their interdependence. This represents the current consensus in the field based on the evidence and arguments presented throughout the text.`
   ];
   
   return paragraphs.join("\n\n");

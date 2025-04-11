@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UploadSection from "@/components/UploadSection";
 import QuestionList, { Question } from "@/components/QuestionList";
 import ChatInterface from "@/components/ChatInterface";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LandingPage } from "@/components/LandingPage";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { Navigate } from "react-router-dom";
 
 const Index = () => {
   const [content, setContent] = useState<string | null>(null);
@@ -24,7 +25,12 @@ const Index = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState("questions");
   const [questionCount, setQuestionCount] = useState("5");
-  const { user } = useSupabaseAuth();
+  const { user, loading } = useSupabaseAuth();
+
+  // If the user is authenticated, redirect to dashboard
+  if (!loading && user) {
+    return <Navigate to="/app" replace />;
+  }
 
   const handleContentUploaded = async (newContent: string, source: string) => {
     console.log("Content received, length:", newContent.length);

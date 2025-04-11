@@ -1,261 +1,167 @@
 
 import React from "react";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, BookOpen, Upload, MessageSquare, Brain, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { GraduationCap, Book, Brain, Sparkles, Lightbulb, Target, BarChart } from "lucide-react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 const LearnMore = () => {
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.6 }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  };
-  
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
+  const { user } = useSupabaseAuth();
 
   return (
-    <div className="container py-16 px-4 md:px-6 space-y-24">
+    <div className="container mx-auto px-4 py-12 space-y-24">
       {/* Hero Section */}
-      <motion.section 
-        className="text-center space-y-6"
-        initial="hidden"
-        animate="visible"
-        variants={sectionVariants}
-      >
-        <div className="inline-block p-2 bg-primary/10 rounded-full mb-4">
-          <GraduationCap className="h-10 w-10 text-primary" />
-        </div>
-        <h1 className="text-4xl md:text-6xl font-bold gama-gradient-text">
-          Learn More About GAMA AI
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Revolutionizing the way students prepare for exams with AI-powered study assistance
+      <section className="max-w-5xl mx-auto text-center space-y-6">
+        <h1 className="text-4xl md:text-5xl font-bold gama-gradient-text">Learn More About GAMA AI</h1>
+        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          Discover how our AI-powered study assistant can transform your learning experience and help you achieve academic success.
         </p>
-      </motion.section>
-      
-      {/* What is GAMA AI */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={sectionVariants}
-        className="space-y-12"
-      >
+        <div className="flex flex-wrap justify-center gap-4 pt-6">
+          <Button asChild className="bg-gradient-to-r from-examace-purple to-examace-blue">
+            <Link to={user ? "/app" : "/auth"}>
+              {user ? "Go to Dashboard" : "Get Started Now"}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">What is GAMA AI?</h2>
-          <div className="h-1 w-20 bg-gradient-to-r from-examace-purple to-examace-blue mx-auto"></div>
+          <h2 className="text-3xl font-bold mb-4">How GAMA AI Works</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Our platform uses advanced AI to analyze your study materials and create personalized learning experiences.
+          </p>
         </div>
-        
-        <div className="grid md:grid-cols-2 gap-10 items-center">
-          <motion.div 
-            variants={itemVariants}
-            className="space-y-4"
-          >
-            <p className="text-lg">
-              <span className="font-bold">GAMA AI</span> is an intelligent study companion designed to help students master their course materials effectively and efficiently.
-            </p>
-            <p>
-              Our platform uses advanced AI technology to analyze your study materials and generate tailored questions and explanations that reinforce your understanding of key concepts.
-            </p>
-            <p>
-              Whether you're preparing for exams, working through assignments, or simply seeking to deepen your comprehension of a subject, GAMA AI provides the tools you need to succeed.
-            </p>
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <Card className="overflow-hidden shadow-lg gama-card">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-examace-purple/20 to-examace-blue/20 z-10"></div>
-                <img 
-                  src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" 
-                  alt="Student studying with laptop" 
-                  className="object-cover w-full h-64"
-                />
+
+        <div className="relative">
+          {/* Process Steps */}
+          <div className="grid md:grid-cols-3 gap-10 relative z-10">
+            {[
+              {
+                icon: <Upload className="h-10 w-10 text-examace-purple" />,
+                title: "1. Upload Your Materials",
+                description: "Upload PDFs, documents, or paste text from your study materials."
+              },
+              {
+                icon: <Brain className="h-10 w-10 text-examace-blue" />,
+                title: "2. AI Analysis",
+                description: "Our AI processes your content to identify key concepts and generate questions."
+              },
+              {
+                icon: <MessageSquare className="h-10 w-10 text-examace-light-blue" />,
+                title: "3. Interactive Learning",
+                description: "Practice with generated questions and chat with our AI about your materials."
+              }
+            ].map((step, index) => (
+              <div 
+                key={index} 
+                className="bg-card border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-4 p-3 rounded-full bg-primary/10">
+                    {step.icon}
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+                  <p className="text-muted-foreground">{step.description}</p>
+                </div>
               </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-2">AI-Powered Learning</h3>
-                <p className="text-muted-foreground">
-                  Our advanced algorithms transform passive reading into active learning through intelligent question generation and personalized explanations.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
+            ))}
+          </div>
+          
+          {/* Decorative elements behind the cards */}
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-examace-purple to-examace-blue opacity-30 hidden md:block -z-10"></div>
         </div>
-      </motion.section>
-      
-      {/* Key Features */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={sectionVariants}
-        className="space-y-12"
-      >
+      </section>
+
+      {/* Benefits Section */}
+      <section className="max-w-5xl mx-auto bg-muted/30 rounded-2xl p-8 md:p-12">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Benefits of Using GAMA AI</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Our platform helps students study more effectively and efficiently.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            "Save hours of study time",
+            "Focus on what you need to learn",
+            "Identify knowledge gaps quickly",
+            "Prepare for exams more effectively",
+            "Understand difficult concepts better",
+            "Study anytime, anywhere"
+          ].map((benefit, index) => (
+            <div 
+              key={index} 
+              className="flex items-start gap-3 p-4 bg-background/80 rounded-lg"
+            >
+              <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <span>{benefit}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Key Features</h2>
-          <div className="h-1 w-20 bg-gradient-to-r from-examace-purple to-examace-blue mx-auto"></div>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Explore the powerful features that make GAMA AI your ideal study companion.
+          </p>
         </div>
-        
-        <motion.div 
-          variants={staggerContainer}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+
+        <div className="space-y-8">
           {[
             {
-              icon: <Book className="h-8 w-8 text-examace-purple" />,
               title: "Smart Question Generation",
-              description: "Turn study materials into effective practice questions that test your understanding."
+              description: "Our AI creates customized questions based on your specific study materials, helping you test your understanding and prepare for exams more effectively.",
+              icon: <BookOpen className="h-8 w-8" />
             },
             {
-              icon: <Brain className="h-8 w-8 text-examace-blue" />,
-              title: "AI-Powered Explanations",
-              description: "Get clear, concise explanations for complex concepts to enhance your comprehension."
+              title: "Interactive AI Chat",
+              description: "Ask follow-up questions about your materials, get clarification on difficult concepts, and deepen your understanding through conversation with our AI.",
+              icon: <MessageSquare className="h-8 w-8" />
             },
             {
-              icon: <Sparkles className="h-8 w-8 text-examace-purple" />,
-              title: "Interactive Learning",
-              description: "Engage with your study material through an interactive question-and-answer format."
-            },
-            {
-              icon: <Lightbulb className="h-8 w-8 text-examace-blue" />,
-              title: "Personalized Insights",
-              description: "Discover knowledge gaps and focus your study efforts where they're needed most."
-            },
-            {
-              icon: <Target className="h-8 w-8 text-examace-purple" />,
-              title: "Exam-Focused Preparation",
-              description: "Practice with questions styled after real exams to build confidence and familiarity."
-            },
-            {
-              icon: <BarChart className="h-8 w-8 text-examace-blue" />,
-              title: "Progress Tracking",
-              description: "Monitor your learning journey and track improvements over time."
+              title: "Multiple Content Formats",
+              description: "Upload PDFs, documents, or paste text directly. GAMA AI processes a variety of content types to accommodate different study materials.",
+              icon: <Upload className="h-8 w-8" />
             }
           ].map((feature, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full gama-card hover:shadow-xl transition-shadow">
-                <CardHeader>
-                  <div className="rounded-full bg-primary/10 p-2 w-fit mb-2">
-                    {feature.icon}
-                  </div>
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-      </motion.section>
-      
-      {/* How It Works - Fixed to be more visible */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={sectionVariants}
-        className="space-y-12"
-      >
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-          <div className="h-1 w-20 bg-gradient-to-r from-examace-purple to-examace-blue mx-auto"></div>
-        </div>
-        
-        <motion.div 
-          variants={staggerContainer}
-          className="grid md:grid-cols-3 gap-12"
-        >
-          {[
-            {
-              step: "01",
-              title: "Upload Your Material",
-              description: "Simply upload your study notes, textbooks, or any learning material in text format."
-            },
-            {
-              step: "02",
-              title: "Generate Questions",
-              description: "Our AI analyzes your content and creates relevant questions with comprehensive answers."
-            },
-            {
-              step: "03",
-              title: "Practice & Learn",
-              description: "Test your knowledge, review explanations, and reinforce your understanding."
-            }
-          ].map((step, index) => (
-            <motion.div 
-              key={index}
-              variants={itemVariants}
-              className="relative"
+            <div 
+              key={index} 
+              className="flex flex-col md:flex-row gap-6 items-start p-6 border rounded-xl"
             >
-              {/* Fixed step number visibility by adjusting color and position */}
-              <div className="absolute -top-6 -left-4 text-7xl font-bold opacity-80 text-primary/30 z-0">
-                {step.step}
+              <div className="bg-primary/10 p-4 rounded-full">
+                {feature.icon}
               </div>
-              <Card className="h-full gama-card relative z-10 pt-6 border-2 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-xl">{step.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{step.description}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </div>
+            </div>
           ))}
-        </motion.div>
-      </motion.section>
-      
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={sectionVariants}
-        className="text-center max-w-3xl mx-auto space-y-6"
-      >
-        <h2 className="text-3xl font-bold">Ready to transform your study routine?</h2>
-        <p className="text-xl text-muted-foreground">
-          Join thousands of students who are already using GAMA AI to achieve better results with less study time.
-        </p>
-        <div className="flex flex-wrap gap-4 justify-center pt-4">
-          <Button
-            asChild
-            size="lg"
-            className="bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90"
-          >
-            <Link to="/auth">Get Started</Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-          >
-            <Link to="/about">Meet Our Team</Link>
+      <section className="max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-examace-purple/10 to-examace-blue/10 rounded-2xl p-8 md:p-12 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Study Experience?</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            Join thousands of students who are using GAMA AI to study more efficiently and effectively for their exams.
+          </p>
+          <Button asChild size="lg" className="bg-gradient-to-r from-examace-purple to-examace-blue">
+            <Link to={user ? "/app" : "/auth"}>
+              {user ? "Go to Dashboard" : "Get Started for Free"}
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </Button>
         </div>
-      </motion.section>
+      </section>
     </div>
   );
 };

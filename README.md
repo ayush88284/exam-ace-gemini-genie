@@ -1,73 +1,121 @@
-# Welcome to your Lovable project
 
-## Project info
+# GAMA AI - AI-Powered Study Assistant
 
-**URL**: https://lovable.dev/projects/8e82ed1e-9dd0-4397-baff-da3708aeba97
+## Overview
 
-## How can I edit this code?
+GAMA AI is an advanced learning platform designed to transform how students prepare for exams and understand complex study materials. Using artificial intelligence, GAMA AI analyzes your study materials to generate customized practice questions, provide interactive chat assistance, and help you master difficult concepts.
 
-There are several ways of editing your application.
+## Key Features
 
-**Use Lovable**
+### Smart Content Analysis
+- Upload PDFs, text documents, or paste content from your study materials
+- Our AI engine processes your content to identify key concepts and learning objectives
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8e82ed1e-9dd0-4397-baff-da3708aeba97) and start prompting.
+### Custom Question Generation
+- Create tailored practice questions based on your specific study materials
+- Adjust the number and complexity of questions to match your learning needs
+- Get detailed explanations with each answer to deepen your understanding
 
-Changes made via Lovable will be committed automatically to this repo.
+### Interactive AI Chat
+- Ask follow-up questions about your study materials
+- Get clarification on difficult concepts
+- Have a conversation with an AI tutor that understands your specific content
 
-**Use your preferred IDE**
+### Personalized Learning Experience
+- Track your progress and focus on areas that need improvement
+- Save time by focusing your study efforts on what matters most
+- Study more effectively with materials customized to your needs
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone <repository-url>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd gama-ai
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Usage
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Sign Up/Login**: Create an account or log in to access your personalized dashboard
+2. **Upload Content**: Upload your study materials (PDF, document) or paste text directly
+3. **Generate Questions**: Choose how many questions you want to create from your materials
+4. **Study & Practice**: Review the generated questions and test your knowledge
+5. **Chat for Clarity**: Use the AI chat feature to ask follow-up questions and deepen your understanding
 
-**Use GitHub Codespaces**
+## Technologies Used
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **State Management**: React Context API, TanStack Query
+- **Authentication**: Supabase Auth
+- **Backend**: Supabase Edge Functions
+- **AI Integration**: Custom AI models for content analysis and generation
 
-## What technologies are used for this project?
+## Project Structure
 
-This project is built with:
+```
+src/
+├── components/         # Reusable UI components
+├── hooks/              # Custom React hooks
+├── integrations/       # Third-party service integrations
+├── lib/                # Utility functions and helpers
+├── pages/              # Application pages
+└── App.tsx             # Main application component
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Features in Detail
 
-## How can I deploy this project?
+### Upload Section
+Users can upload study materials through:
+- PDF upload
+- Document upload
+- Direct text pasting
+- URL import (coming soon)
 
-Simply open [Lovable](https://lovable.dev/projects/8e82ed1e-9dd0-4397-baff-da3708aeba97) and click on Share -> Publish.
+### Question Generation
+The AI analyzes uploaded content to create various question types:
+- Multiple-choice questions
+- Short-answer questions
+- Concept-based questions
+- Application questions
 
-## Can I connect a custom domain to my Lovable project?
+### AI Chat Interface
+A conversational interface that allows users to:
+- Ask specific questions about the content
+- Request explanations of difficult concepts
+- Get study tips based on the material
+- Request additional questions on specific topics
 
-Yes it is!
+## Team
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+GAMA AI was developed by:
+- **G**ouri - Lead Developer
+- **A**neri - UX Designer
+- **M**eet - AI Engineer
+- **A**yush - Product Manager
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Roadmap
+
+Future development plans include:
+- Flashcard generation and spaced repetition system
+- Progress tracking and analytics dashboard
+- Collaborative study sessions
+- Mobile application
+- Custom question templates
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+For support or inquiries, please contact us at support@gama-ai.com

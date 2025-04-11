@@ -7,8 +7,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { Moon, Sun, Menu, GraduationCap, User, LogOut } from "lucide-react";
+import { Moon, Sun, Menu, GraduationCap, User, LogOut, Settings } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { motion } from "framer-motion";
@@ -32,9 +33,9 @@ const Header = () => {
     return location.pathname === path;
   };
 
+  // Updated navItems - removed learn more 
   const navItems = [
     { label: "Home", path: "/" },
-    { label: "Learn More", path: "/learn-more" },
     { label: "About Us", path: "/about" },
   ];
 
@@ -55,7 +56,7 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
+          {user && authNavItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
@@ -69,7 +70,7 @@ const Header = () => {
               {item.label}
             </Link>
           ))}
-          {user && authNavItems.map((item) => (
+          {!user && navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
@@ -102,6 +103,14 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => navigate("/app")}>
                     Dashboard
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
@@ -169,7 +178,7 @@ const Header = () => {
           className="md:hidden bg-background/95 backdrop-blur-md border-b"
         >
           <div className="container py-4 space-y-3">
-            {navItems.map((item) => (
+            {!user && navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -184,21 +193,49 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
-            {user && authNavItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "block py-2 text-sm font-medium",
-                  isActive(item.path)
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                )}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {user && (
+              <>
+                {authNavItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "block py-2 text-sm font-medium",
+                      isActive(item.path)
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    )}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  to="/profile"
+                  className={cn(
+                    "block py-2 text-sm font-medium",
+                    isActive("/profile")
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <Link
+                  to="/settings"
+                  className={cn(
+                    "block py-2 text-sm font-medium",
+                    isActive("/settings")
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+              </>
+            )}
             {!user && (
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <Button

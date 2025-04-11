@@ -12,6 +12,8 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import AboutUs from "./pages/About";
 import LearnMore from "./pages/LearnMore";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import { useSupabaseAuth } from "./hooks/useSupabaseAuth";
 
 const queryClient = new QueryClient();
@@ -73,6 +75,20 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Profile />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Settings />
                 </Layout>
               </ProtectedRoute>
             } />
