@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { GraduationCap, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { GamaIcon } from "@/components/GamaIcon";
 import { 
   InputOTP, 
   InputOTPGroup, 
@@ -147,28 +148,37 @@ const Auth = () => {
   };
   
   return (
-    <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-      {/* Decorative grid background */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-background [background:radial-gradient(#9b87f510_1px,transparent_1px)] [background-size:32px_32px]"></div>
+    <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="gama-landing-gradient absolute inset-0 -z-10"></div>
       
-      {/* Decorative blurred gradient */}
+      {/* Decorative grid background */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-background/10 [background:radial-gradient(#9b87f510_1px,transparent_1px)] [background-size:32px_32px]"></div>
+      
+      {/* Decorative blurred gradient blobs */}
       <div className="absolute top-0 left-1/4 w-72 h-72 bg-examace-purple/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
       <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-examace-blue/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+      <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-indigo-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-4000"></div>
       
       <motion.div 
-        className="w-full max-w-md"
+        className="w-full max-w-md z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-8 w-8 gama-gradient-text" />
+        <div className="flex justify-center mb-10">
+          <motion.div 
+            className="flex flex-col items-center gap-3"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <GamaIcon size={50} />
             <h1 className="text-3xl font-bold gama-gradient-text">GAMA AI</h1>
-          </div>
+          </motion.div>
         </div>
         
-        <Card className="gama-card backdrop-blur-sm shadow-xl">
+        <Card className="gama-card overflow-hidden border-white/10 dark:border-white/5 shadow-xl">
           <CardContent className="pt-6">
             {showOTPVerification ? (
               <motion.div 
@@ -204,7 +214,7 @@ const Auth = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
+                    className="w-full gama-button-primary"
                     disabled={isLoading || otp.length !== 6}
                   >
                     {isLoading ? "Verifying..." : "Verify Email"}
@@ -250,7 +260,7 @@ const Auth = () => {
                           id="signin-email"
                           type="email"
                           placeholder="Enter your email"
-                          className="pl-10"
+                          className="pl-10 gama-input"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
@@ -268,7 +278,7 @@ const Auth = () => {
                           id="signin-password"
                           type="password"
                           placeholder="Enter your password"
-                          className="pl-10"
+                          className="pl-10 gama-input"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -279,7 +289,7 @@ const Auth = () => {
                     <motion.div variants={itemVariants}>
                       <Button 
                         type="submit" 
-                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
+                        className="w-full gama-button-primary flex items-center justify-center gap-2"
                         disabled={isLoading}
                       >
                         {isLoading ? "Signing in..." : "Sign In"}
@@ -307,7 +317,7 @@ const Auth = () => {
                           id="signup-name"
                           type="text"
                           placeholder="Enter your name"
-                          className="pl-10"
+                          className="pl-10 gama-input"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           required
@@ -325,7 +335,7 @@ const Auth = () => {
                           id="signup-email"
                           type="email"
                           placeholder="Enter your email"
-                          className="pl-10"
+                          className="pl-10 gama-input"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
@@ -343,7 +353,7 @@ const Auth = () => {
                           id="signup-password"
                           type="password"
                           placeholder="Create a password"
-                          className="pl-10"
+                          className="pl-10 gama-input"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -354,7 +364,7 @@ const Auth = () => {
                     <motion.div variants={itemVariants}>
                       <Button 
                         type="submit" 
-                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-examace-purple to-examace-blue hover:from-examace-purple/90 hover:to-examace-blue/90 transition-all"
+                        className="w-full gama-button-primary flex items-center justify-center gap-2"
                         disabled={isLoading}
                       >
                         {isLoading ? "Creating account..." : "Create Account"}
@@ -368,9 +378,14 @@ const Auth = () => {
           </CardContent>
         </Card>
         
-        <p className="mt-8 text-center text-sm text-muted-foreground">
+        <motion.p 
+          className="mt-8 text-center text-sm text-white/70"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
           GAMA AI - Your Intelligent Study Companion
-        </p>
+        </motion.p>
       </motion.div>
     </div>
   );

@@ -35,7 +35,7 @@ export const GamaIcon: React.FC<GamaIconProps> = ({ size = 40, className = "" })
       <motion.div 
         className={`absolute inset-0 rounded-sm ${
           isLight 
-            ? "bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600" 
+            ? "bg-gradient-to-br from-indigo-700 via-purple-700 to-blue-700" 
             : "bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500"
         }`}
         style={{ 
@@ -46,7 +46,7 @@ export const GamaIcon: React.FC<GamaIconProps> = ({ size = 40, className = "" })
       {/* Glowing effect */}
       <div 
         className={`absolute inset-0 blur-sm -z-10 opacity-70 ${
-          isLight ? "bg-indigo-500" : "bg-indigo-400"
+          isLight ? "bg-indigo-600" : "bg-indigo-400"
         }`}
         style={{ 
           clipPath: "polygon(50% 0%, 65% 25%, 98% 35%, 75% 55%, 85% 90%, 50% 75%, 15% 90%, 25% 55%, 2% 35%, 35% 25%)",
