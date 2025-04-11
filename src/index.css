@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -85,7 +84,7 @@
   .light body {
     background-image: radial-gradient(
       circle at top right,
-      rgba(155, 135, 245, 0.1) 0%,
+      rgba(79, 70, 229, 0.08) 0%,
       rgba(109, 157, 255, 0.05) 50%,
       rgba(255, 255, 255, 0) 100%
     );
@@ -104,7 +103,11 @@
 }
 
 .gama-gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-blue-500;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-blue-600;
+}
+
+.light .gama-gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-700;
 }
 
 .gama-gradient-bg {
@@ -115,12 +118,16 @@
   @apply bg-gradient-to-br from-indigo-950 via-purple-800 to-blue-600;
 }
 
+.light .gama-landing-gradient {
+  @apply bg-gradient-to-br from-white via-indigo-50 to-blue-100 opacity-90;
+}
+
 .gama-card {
   @apply backdrop-blur-sm border shadow-lg rounded-xl;
 }
 
 .light .gama-card {
-  @apply bg-white/70 border-white/20;
+  @apply bg-white/80 border-gray-200 shadow-md;
 }
 
 .dark .gama-card {
@@ -136,16 +143,28 @@
 }
 
 .gama-button-secondary {
-  @apply bg-white/10 backdrop-blur-sm border border-white/20 
-    hover:bg-white/20 text-white font-medium px-5 py-2.5 
-    rounded-xl transition-all duration-300;
+  @apply backdrop-blur-sm border transition-all duration-300;
+}
+
+.light .gama-button-secondary {
+  @apply bg-white/70 border-gray-300 hover:bg-gray-100 text-gray-800;
+}
+
+.dark .gama-button-secondary {
+  @apply bg-white/10 border-white/20 hover:bg-white/20 text-white;
 }
 
 .gama-input {
-  @apply bg-white/10 backdrop-blur-sm border border-white/20 
-    text-white rounded-xl px-4 py-2.5 
-    focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent
-    placeholder:text-white/50;
+  @apply backdrop-blur-sm border rounded-xl px-4 py-2.5 
+    focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent;
+}
+
+.light .gama-input {
+  @apply bg-white/80 border-gray-300 text-gray-800 placeholder:text-gray-500/50;
+}
+
+.dark .gama-input {
+  @apply bg-white/10 border-white/20 text-white placeholder:text-white/50;
 }
 
 @keyframes blob {
@@ -289,4 +308,80 @@
 
 .micro-pulse {
   @apply hover:animate-[pulse_1.5s_ease-in-out_infinite];
+}
+
+/* Feature cards */
+.feature-card {
+  @apply glass-card p-6 flex flex-col items-center gap-4 transition-all duration-300 hover:transform hover:translate-y-[-5px];
+}
+
+.light .feature-card {
+  @apply bg-white/80 border-gray-200 shadow-md;
+}
+
+.dark .feature-card {
+  @apply bg-gray-900/40 border-white/10;
+}
+
+/* Testimonial cards */
+.testimonial-card {
+  @apply p-6 rounded-xl relative;
+}
+
+.light .testimonial-card {
+  @apply bg-white shadow-md border border-gray-100;
+}
+
+.dark .testimonial-card {
+  @apply bg-gray-900/60 border-white/10;
+}
+
+/* Pricing cards */
+.pricing-card {
+  @apply glass-card p-8 flex flex-col h-full transition-all duration-300;
+}
+
+.light .pricing-card {
+  @apply bg-white/90 border-gray-200 shadow-md;
+}
+
+.dark .pricing-card {
+  @apply bg-gray-900/40 border-white/10;
+}
+
+.pricing-card-highlight {
+  @apply relative border-2 transform hover:-translate-y-1;
+}
+
+.light .pricing-card-highlight {
+  @apply border-indigo-400 shadow-xl shadow-indigo-200/40;
+}
+
+.dark .pricing-card-highlight {
+  @apply border-indigo-500 shadow-xl shadow-indigo-500/20;
+}
+
+/* FAQ items */
+.faq-item {
+  @apply rounded-xl p-6 mb-4 border transition-all duration-200;
+}
+
+.light .faq-item {
+  @apply bg-white/80 border-gray-200;
+}
+
+.dark .faq-item {
+  @apply bg-gray-900/40 border-white/10;
+}
+
+.faq-item.active {
+  @apply shadow-md;
+}
+
+.light .faq-item.active {
+  @apply border-indigo-300 bg-white;
+}
+
+.dark .faq-item.active {
+  @apply border-indigo-500/50 bg-gray-900/60;
 }
