@@ -1,11 +1,10 @@
-
 import { supabase } from "./client";
 import { toast } from "sonner";
 
 // Enhanced prompts for better quality responses
 const ENHANCED_PROMPTS = {
   questions: `
-You are GAMA AI, an expert academic assistant specializing in creating high-quality study questions. 
+You are GAMA AI, powered by Google's Gemini, an expert academic assistant specializing in creating high-quality study questions. 
 Analyze the provided study material thoroughly and generate thoughtful questions that:
 1. Are precise, clear, and academically rigorous
 2. Test comprehension of key concepts rather than minor details
@@ -22,7 +21,7 @@ Be thorough in your analysis and ensure questions cover the most important conce
 `,
   
   chat: `
-You are GAMA AI, an expert academic assistant helping students understand their study materials. 
+You are GAMA AI, powered by Google's Gemini, an expert academic assistant helping students understand their study materials. 
 When responding to questions:
 1. Focus on accuracy and clarity in your explanations
 2. Use examples to illustrate complex concepts
@@ -37,17 +36,15 @@ If you're uncertain about something, acknowledge the limitations rather than pro
 };
 
 // Generate questions from content
-export const generateEnhancedQuestions = async (
-  content: string, 
-  numQuestions: number = 5
-) => {
+export const generateEnhancedQuestions = async (content: string, numQuestions: number = 5) => {
   try {
     const { data, error } = await supabase.functions.invoke('generate-content', {
       body: {
         content: content,
         type: 'generate-questions',
         numQuestions: numQuestions,
-        enhancedPrompt: ENHANCED_PROMPTS.questions
+        enhancedPrompt: ENHANCED_PROMPTS.questions,
+        model: 'gemini'
       }
     });
     
@@ -57,15 +54,13 @@ export const generateEnhancedQuestions = async (
     if (data?.status === 'error') {
       console.warn("API returned error status:", data.error);
       
-      // If the error is about API key missing, show a specific message
       if (data.errorType === 'API_KEY_MISSING') {
-        toast.warning("GAMA AI is running in offline mode. Some features are limited.");
-        console.info("Using fallback content generation due to missing API key");
+        toast.warning("GAMA AI is running in offline mode. Please configure Gemini API key.");
+        console.info("Using fallback content generation due to missing Gemini API key");
       } else {
         toast.error("Error generating questions: " + (data.error || "Unknown error"));
       }
       
-      // Return the fallback data if provided, otherwise throw
       if (data.generatedText) {
         return data.generatedText;
       }
@@ -81,8 +76,6 @@ export const generateEnhancedQuestions = async (
   } catch (error) {
     console.error("Error generating enhanced questions:", error);
     toast.error("Failed to generate questions. Using sample questions instead.");
-    
-    // Generate simple fallback questions on client side
     return generateClientSideFallbackQuestions(content, numQuestions);
   }
 };
@@ -99,25 +92,23 @@ export const getEnhancedChatResponse = async (
         content: studyContent,
         userMessage: userMessage,
         conversationHistory: conversationHistory,
-        type: 'chat'
+        type: 'chat',
+        model: 'gemini'
       }
     });
     
     if (error) throw new Error(error.message);
     
-    // Check if we received an error status in the data
     if (data?.status === 'error') {
       console.warn("API returned error status:", data.error);
       
-      // If the error is about API key missing, show a specific message
       if (data.errorType === 'API_KEY_MISSING') {
-        toast.warning("GAMA AI is running in offline mode. Some features are limited.");
+        toast.warning("GAMA AI is running in offline mode. Please configure Gemini API key.");
         console.info("Using fallback content for chat");
       } else {
         toast.error("Error generating response: " + (data.error || "Unknown error"));
       }
       
-      // Return the fallback data if provided, otherwise throw
       if (data.generatedText) {
         return data.generatedText;
       }
@@ -133,8 +124,6 @@ export const getEnhancedChatResponse = async (
   } catch (error) {
     console.error("Error generating enhanced chat response:", error);
     toast.error("Failed to generate a response. Using fallback response.");
-    
-    // Return a reasonable fallback
     return generateClientSideFallbackChatResponse(studyContent, userMessage);
   }
 };
