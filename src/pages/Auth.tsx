@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { GraduationCap, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -27,11 +26,12 @@ const Auth = () => {
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const { signIn, signUp, user, verifyOTP } = useSupabaseAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   
   useEffect(() => {
+    console.log("Auth component: user state changed:", user?.email);
     if (user) {
+      console.log("User is authenticated, navigating to /app");
       navigate("/app");
     }
   }, [user, navigate]);
@@ -41,24 +41,18 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
+      console.log("Submitting sign in form with email:", email);
       const success = await signIn(email, password);
       
       if (!success) {
         throw new Error("Sign in failed");
       }
       
-      toast({
-        title: "Successfully signed in!",
-        description: "Redirecting to your dashboard...",
-      });
-      
-      navigate("/app");
+      toast.success("Successfully signed in!");
+      // Navigation will happen in useEffect when user state updates
     } catch (error: any) {
-      toast({
-        title: "Sign in failed",
-        description: error.message || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      console.error("Handle sign in error:", error.message);
+      toast.error(error.message || "Please check your credentials and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -73,24 +67,21 @@ const Auth = () => {
         throw new Error("Please enter your name");
       }
       
+      console.log("Submitting sign up form with email:", email);
       const success = await signUp(email, password);
       
       if (!success) {
         throw new Error("Sign up failed");
       }
       
+      // Using mock OTP for now
+      localStorage.setItem('pendingVerification', email);
       setShowOTPVerification(true);
       
-      toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the OTP code.",
-      });
+      toast.success("Verification code sent! Please check your email for the OTP code.");
     } catch (error: any) {
-      toast({
-        title: "Sign up failed",
-        description: error.message || "Please check your information and try again.",
-        variant: "destructive",
-      });
+      console.error("Handle sign up error:", error.message);
+      toast.error(error.message || "Please check your information and try again.");
       setShowOTPVerification(false);
     } finally {
       setIsLoading(false);
@@ -112,20 +103,13 @@ const Auth = () => {
         throw new Error("Invalid verification code");
       }
       
-      toast({
-        title: "Email verified successfully!",
-        description: "You can now sign in with your credentials.",
-      });
+      toast.success("Email verified successfully! You can now sign in with your credentials.");
       
       setShowOTPVerification(false);
       setActiveTab("signin");
     } catch (error: any) {
       setOtpError(error.message || "Verification failed. Please try again.");
-      toast({
-        title: "Verification failed",
-        description: error.message || "Please check the code and try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Please check the code and try again.");
     } finally {
       setIsLoading(false);
     }

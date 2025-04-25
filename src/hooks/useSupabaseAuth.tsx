@@ -13,6 +13,7 @@ export function useSupabaseAuth() {
     // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        console.log("Auth state changed:", event, currentSession?.user?.email);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
@@ -21,6 +22,7 @@ export function useSupabaseAuth() {
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession?.user?.email);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
@@ -31,18 +33,22 @@ export function useSupabaseAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting sign in with:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error("Sign in error:", error.message);
         throw error;
       }
 
+      console.log("Sign in successful:", data?.user?.email);
       toast.success('Signed in successfully');
       return true;
     } catch (error: any) {
+      console.error("Sign in exception:", error.message);
       toast.error(error.message || 'Error signing in');
       return false;
     }
@@ -50,29 +56,31 @@ export function useSupabaseAuth() {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting sign up with:", email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: window.location.origin,
-          data: {
-            email_confirmed: false,
-          }
         }
       });
 
       if (error) {
+        console.error("Sign up error:", error.message);
         throw error;
       }
 
-      // Since we're using OTP instead of email confirmation link
-      // We'll simulate OTP sending here (in a real app, this would send through a secure channel)
-      // Note: Supabase doesn't have a built-in OTP method, so this is a simplified mock
-      localStorage.setItem('pendingVerification', email);
+      console.log("Sign up response:", data);
       
-      toast.success('Please check your email for verification code');
+      if (data.user && !data.user.email_confirmed_at) {
+        toast.success('Please check your email to confirm your account');
+      } else {
+        toast.success('Account created successfully');
+      }
+      
       return true;
     } catch (error: any) {
+      console.error("Sign up exception:", error.message);
       toast.error(error.message || 'Error signing up');
       return false;
     }
@@ -103,14 +111,18 @@ export function useSupabaseAuth() {
 
   const signOut = async () => {
     try {
+      console.log("Attempting sign out");
       const { error } = await supabase.auth.signOut();
       
       if (error) {
+        console.error("Sign out error:", error.message);
         throw error;
       }
       
+      console.log("Sign out successful");
       toast.success('Signed out successfully');
     } catch (error: any) {
+      console.error("Sign out exception:", error.message);
       toast.error(error.message || 'Error signing out');
     }
   };
