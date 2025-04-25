@@ -20,6 +20,30 @@ serve(async (req) => {
       throw new Error('Content is required');
     }
 
+    // Check if OpenAI API key is configured
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!apiKey) {
+      console.error('OpenAI API key is not configured in Supabase secrets');
+      
+      // Instead of throwing an error, return a more informative response with a specific status code
+      // that the client can handle
+      return new Response(
+        JSON.stringify({ 
+          error: 'OpenAI API key is not configured',
+          status: 'error',
+          errorType: 'API_KEY_MISSING',
+          generatedText: generateFallbackResponse(type, content, numQuestions)
+        }),
+        { 
+          status: 200, // We're returning 200 with an error flag instead of 500 to make handling easier
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
+
     // Set the appropriate system prompt based on type
     let systemPrompt = '';
     let prompt = '';
@@ -64,11 +88,6 @@ Your goal is to help the student truly master the material, not just get through
     }
 
     // Call OpenAI API
-    const apiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!apiKey) {
-      throw new Error('OpenAI API key is not configured');
-    }
-
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -112,10 +131,11 @@ Your goal is to help the student truly master the material, not just get through
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        status: 'error'
+        status: 'error',
+        errorType: 'PROCESSING_ERROR'
       }),
       { 
-        status: 500,
+        status: 200, // Using 200 even for errors, but with error flag
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json' 
@@ -124,3 +144,28 @@ Your goal is to help the student truly master the material, not just get through
     );
   }
 });
+
+// Generate fallback content when OpenAI API is not available
+function generateFallbackResponse(type, content, numQuestions = 5) {
+  if (type === 'generate-questions') {
+    // Create simple generic questions based on the content length
+    let fallbackContent = '';
+    const contentPreview = content.substring(0, 500);
+    const words = contentPreview.split(/\s+/).filter(word => word.length > 5);
+    
+    for (let i = 1; i <= Math.min(numQuestions, 5); i++) {
+      // Use some words from the content to make questions somewhat relevant
+      const randomWord = words[Math.floor(Math.random() * words.length)] || "topic";
+      
+      fallbackContent += `Question: What is the significance of ${randomWord} in this material?\n`;
+      fallbackContent += `Answer: ${randomWord} is a key concept in the material. It relates to several other topics and understanding it is crucial for mastering the subject.\n\n`;
+    }
+    
+    return fallbackContent;
+  } 
+  else if (type === 'chat') {
+    return "I'm currently operating in offline mode due to API configuration issues. I can see you've uploaded some study material, but I can't analyze it in detail right now. Please ask your administrator to configure the OpenAI API key in the Supabase Edge Function settings to enable full AI capabilities.";
+  }
+  
+  return "Unable to generate content due to API configuration issues.";
+}

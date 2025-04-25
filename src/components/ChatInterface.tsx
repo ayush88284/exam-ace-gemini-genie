@@ -3,10 +3,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, User, Bot } from "lucide-react";
+import { Send, User, Bot, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getEnhancedChatResponse } from "@/integrations/supabase/aiHelpers";
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -55,35 +57,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
     try {
       console.log("Sending chat request with content length:", studyContent?.length || 0);
       
-      // Call our Supabase Edge Function with proper error handling
-      const { data, error } = await supabase.functions.invoke('generate-content', {
-        body: {
-          prompt: inputMessage,
-          content: studyContent || "",
-          type: 'chat'
-        }
-      });
-      
-      if (error) {
-        console.error("Supabase function error:", error);
-        throw new Error(error.message);
-      }
-      
-      if (!data || !data.generatedText) {
-        console.error("Empty response from generate-content function");
-        throw new Error("No content was generated");
-      }
+      // Use our enhanced chat response function
+      const response = await getEnhancedChatResponse(inputMessage, studyContent, []);
       
       const aiResponse = {
         id: (Date.now() + 1).toString(),
-        content: data.generatedText,
+        content: response,
         isUser: false,
       };
       
       setMessages(prevMessages => [...prevMessages, aiResponse]);
+      
+      // Check if we're in offline mode based on the response content
+      if (response.includes("offline mode")) {
+        setIsOfflineMode(true);
+      }
     } catch (error) {
       console.error("Error in chat:", error);
-      toast.error("Failed to get response. Please try again.");
       
       // Fallback response
       const fallbackResponse = {
@@ -93,6 +83,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
       };
       
       setMessages(prevMessages => [...prevMessages, fallbackResponse]);
+      setIsOfflineMode(true);
     } finally {
       setIsLoading(false);
     }
@@ -117,6 +108,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
           )}
         </div>
 
+        {isOfflineMode && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md p-3 mb-4 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              GAMA AI is running in offline mode with limited functionality. Some features may not work as expected.
+            </p>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
           {messages.map((message) => (
             <div
@@ -130,8 +130,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
                 className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-full shrink-0",
                   message.isUser
-                    ? "bg-examace-purple text-white"
-                    : "bg-examace-blue text-white"
+                    ? "bg-purple-600 text-white"
+                    : "bg-blue-500 text-white"
                 )}
               >
                 {message.isUser ? (
@@ -144,8 +144,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
                 className={cn(
                   "rounded-2xl px-4 py-3 max-w-[80%] break-words text-sm",
                   message.isUser
-                    ? "bg-examace-purple/10 text-foreground rounded-tr-none"
-                    : "bg-examace-blue/10 text-foreground rounded-tl-none"
+                    ? "bg-purple-600/10 text-foreground rounded-tr-none"
+                    : "bg-blue-500/10 text-foreground rounded-tl-none"
                 )}
               >
                 {message.content}
@@ -154,10 +154,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
           ))}
           {isLoading && (
             <div className="flex items-start gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-examace-blue text-white shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white shrink-0">
                 <Bot className="h-5 w-5" />
               </div>
-              <div className="rounded-2xl px-4 py-3 bg-examace-blue/10 text-foreground rounded-tl-none">
+              <div className="rounded-2xl px-4 py-3 bg-blue-500/10 text-foreground rounded-tl-none">
                 <span className="flex gap-1 items-center">
                   <span className="animate-bounce">•</span>
                   <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>•</span>
@@ -181,7 +181,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ contentSource, studyConte
           <Button 
             onClick={handleSendMessage} 
             disabled={!inputMessage.trim() || isLoading}
-            className="gama-gradient-bg shrink-0"
+            className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white shrink-0"
             size="icon"
           >
             <Send className="h-5 w-5" />

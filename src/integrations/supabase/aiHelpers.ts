@@ -52,6 +52,27 @@ export const generateEnhancedQuestions = async (
     });
     
     if (error) throw new Error(error.message);
+    
+    // Check if we received an error status in the data
+    if (data?.status === 'error') {
+      console.warn("API returned error status:", data.error);
+      
+      // If the error is about API key missing, show a specific message
+      if (data.errorType === 'API_KEY_MISSING') {
+        toast.warning("GAMA AI is running in offline mode. Some features are limited.");
+        console.info("Using fallback content generation due to missing API key");
+      } else {
+        toast.error("Error generating questions: " + (data.error || "Unknown error"));
+      }
+      
+      // Return the fallback data if provided, otherwise throw
+      if (data.generatedText) {
+        return data.generatedText;
+      }
+      
+      throw new Error(data.error || "Error generating content");
+    }
+    
     if (!data || !data.generatedText) {
       throw new Error('No content was generated. The API response was empty.');
     }
@@ -59,8 +80,10 @@ export const generateEnhancedQuestions = async (
     return data.generatedText;
   } catch (error) {
     console.error("Error generating enhanced questions:", error);
-    toast.error("Failed to generate questions. Please try again.");
-    throw error;
+    toast.error("Failed to generate questions. Using sample questions instead.");
+    
+    // Generate simple fallback questions on client side
+    return generateClientSideFallbackQuestions(content, numQuestions);
   }
 };
 
@@ -76,12 +99,32 @@ export const getEnhancedChatResponse = async (
         content: studyContent,
         userMessage: userMessage,
         conversationHistory: conversationHistory,
-        type: 'chat-response',
-        enhancedPrompt: ENHANCED_PROMPTS.chat
+        type: 'chat'
       }
     });
     
     if (error) throw new Error(error.message);
+    
+    // Check if we received an error status in the data
+    if (data?.status === 'error') {
+      console.warn("API returned error status:", data.error);
+      
+      // If the error is about API key missing, show a specific message
+      if (data.errorType === 'API_KEY_MISSING') {
+        toast.warning("GAMA AI is running in offline mode. Some features are limited.");
+        console.info("Using fallback content for chat");
+      } else {
+        toast.error("Error generating response: " + (data.error || "Unknown error"));
+      }
+      
+      // Return the fallback data if provided, otherwise throw
+      if (data.generatedText) {
+        return data.generatedText;
+      }
+      
+      throw new Error(data.error || "Error generating content");
+    }
+    
     if (!data || !data.generatedText) {
       throw new Error('No response was generated. The API response was empty.');
     }
@@ -89,7 +132,31 @@ export const getEnhancedChatResponse = async (
     return data.generatedText;
   } catch (error) {
     console.error("Error generating enhanced chat response:", error);
-    toast.error("Failed to generate a response. Please try again.");
-    throw error;
+    toast.error("Failed to generate a response. Using fallback response.");
+    
+    // Return a reasonable fallback
+    return generateClientSideFallbackChatResponse(studyContent, userMessage);
   }
+};
+
+// Generate fallback questions on the client side if the API fails
+const generateClientSideFallbackQuestions = (content: string, numQuestions: number = 5) => {
+  let fallbackContent = '';
+  const contentPreview = content.substring(0, 500);
+  const words = contentPreview.split(/\s+/).filter(word => word.length > 5);
+  
+  for (let i = 1; i <= Math.min(numQuestions, 5); i++) {
+    // Use some words from the content to make questions somewhat relevant
+    const randomWord = words[Math.floor(Math.random() * words.length)] || "topic";
+    
+    fallbackContent += `Question: What is the significance of ${randomWord} in this material?\n`;
+    fallbackContent += `Answer: ${randomWord} is a key concept in the material. It relates to several other topics and understanding it is crucial for mastering the subject.\n\n`;
+  }
+  
+  return fallbackContent;
+};
+
+// Generate a fallback chat response on the client side if the API fails
+const generateClientSideFallbackChatResponse = (content: string, userMessage: string) => {
+  return "I'm currently operating in offline mode due to API configuration issues. I can see you've uploaded some study material, but I can't analyze it in detail right now. Please check with your administrator about the AI service configuration.";
 };
