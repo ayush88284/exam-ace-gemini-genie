@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -7,16 +8,13 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { content, type, numQuestions = 5 } = await req.json();
-
-    if (!content) {
-      throw new Error('Content is required');
-    }
+    const { content, type, numQuestions = 5, userMessage = '', conversationHistory = [] } = await req.json();
 
     // Check if Gemini API key is configured
     const apiKey = Deno.env.get('GEMINI_API_KEY');
@@ -40,12 +38,10 @@ serve(async (req) => {
       );
     }
 
-    // Set the appropriate system prompt based on type
-    const prompt = type === 'generate-questions' 
-      ? `Based on the following study content, generate ${numQuestions} high-quality exam questions with comprehensive answers:\n\n${content}`
-      : `The following is the study content I'm referring to:\n\n${content}\n\nBased on this content, please answer my question: ${type === 'chat' && req.query ? req.query.message : 'Can you summarize the key points?'}`;
+    // Prepare the prompt based on the request type
+    const prompt = preparePrompt(type, content, numQuestions, userMessage, conversationHistory);
 
-    // Call Gemini API using the Vertex AI API endpoint
+    // Call Gemini API
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
       method: 'POST',
       headers: {
@@ -92,7 +88,8 @@ serve(async (req) => {
       JSON.stringify({ 
         error: error.message,
         status: 'error',
-        errorType: 'PROCESSING_ERROR'
+        errorType: 'PROCESSING_ERROR',
+        generatedText: generateFallbackResponse(type, content, 5)
       }),
       { 
         status: 200,
@@ -105,16 +102,32 @@ serve(async (req) => {
   }
 });
 
-// Generate fallback content when OpenAI API is not available
+// Prepare prompt based on request type
+function preparePrompt(type, content, numQuestions, userMessage = '', conversationHistory = []) {
+  switch(type) {
+    case 'generate-questions':
+      return `Based on the following study content, generate ${numQuestions} high-quality exam questions with comprehensive answers:\n\n${content}`;
+    
+    case 'chat':
+      const historyContext = conversationHistory.map(msg => 
+        `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+      ).join('\n');
+      
+      return `Study Material Context:\n${content}\n\nConversation History:\n${historyContext}\n\nLatest User Message:\n${userMessage}\n\nProvide a helpful, contextual response based on the study material.`;
+    
+    default:
+      return content;
+  }
+}
+
+// Generate fallback content when Gemini API is not available
 function generateFallbackResponse(type, content, numQuestions = 5) {
   if (type === 'generate-questions') {
-    // Create simple generic questions based on the content length
     let fallbackContent = '';
     const contentPreview = content.substring(0, 500);
     const words = contentPreview.split(/\s+/).filter(word => word.length > 5);
     
     for (let i = 1; i <= Math.min(numQuestions, 5); i++) {
-      // Use some words from the content to make questions somewhat relevant
       const randomWord = words[Math.floor(Math.random() * words.length)] || "topic";
       
       fallbackContent += `Question: What is the significance of ${randomWord} in this material?\n`;
@@ -124,7 +137,7 @@ function generateFallbackResponse(type, content, numQuestions = 5) {
     return fallbackContent;
   } 
   else if (type === 'chat') {
-    return "I'm currently operating in offline mode due to API configuration issues. I can see you've uploaded some study material, but I can't analyze it in detail right now. Please ask your administrator to configure the OpenAI API key in the Supabase Edge Function settings to enable full AI capabilities.";
+    return "I'm currently operating in offline mode due to API configuration issues. I can see you've uploaded some study material, but I can't analyze it in detail right now. Please ask your administrator to configure the Gemini API key in the Supabase Edge Function settings.";
   }
   
   return "Unable to generate content due to API configuration issues.";
