@@ -49,11 +49,13 @@ serve(async (req) => {
     const prompt = preparePrompt(type, content, numQuestions, userMessage, conversationHistory);
 
     // Call Gemini API
+    console.log('Calling Gemini API with key starting with:', apiKey.substring(0, 4));
+    
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'x-goog-api-key': apiKey,
       },
       body: JSON.stringify({
         contents: [{
@@ -70,11 +72,21 @@ serve(async (req) => {
 
     const responseData = await response.json();
     
+    console.log("Gemini API response status:", response.status);
+    
     if (responseData.error) {
+      console.error('Gemini API error:', responseData.error);
       throw new Error(`Gemini API error: ${responseData.error.message}`);
     }
 
-    const generatedText = responseData.candidates[0].content.parts[0].text;
+    const generatedText = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!generatedText) {
+      console.error('No text was generated. Response structure:', JSON.stringify(responseData));
+      throw new Error('No text was generated in the response');
+    }
+
+    console.log("Successfully generated content, length:", generatedText.length);
 
     return new Response(
       JSON.stringify({ 
