@@ -18,6 +18,13 @@ serve(async (req) => {
 
     // Check if Gemini API key is configured
     const apiKey = Deno.env.get('GEMINI_API_KEY');
+    
+    // Add extensive logging for API key check
+    console.log('API Key Check:');
+    console.log('- API Key present:', !!apiKey);
+    console.log('- API Key length:', apiKey?.length || 'N/A');
+    console.log('- First 4 chars:', apiKey?.substring(0, 4) || 'N/A');
+
     if (!apiKey) {
       console.error('Gemini API key is not configured in Supabase secrets');
       
